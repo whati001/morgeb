@@ -104,7 +104,7 @@ void loop()
   // hence, we substract the current seconds and compute the next smooth minute value
   DateTime nextWakeup = now -
                         TimeSpan(0, 0, now.minute(), now.second()) +
-                        TimeSpan(0, 0, (((uint8_t)(now.minute() + RTC_WAKEUP_PIN) / RTC_WAKEUP_PIN)) * RTC_WAKEUP_PIN, 0);
+                        TimeSpan(0, 0, ((now.minute() + RTC_SLEEP_TIME) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
   rtc.setAlarm1(nextWakeup, DS3231_A1_Minute);
 
   Serial.print("Set next wakeup to:");
