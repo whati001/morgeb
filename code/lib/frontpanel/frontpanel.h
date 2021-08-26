@@ -11,6 +11,7 @@ public:
 
     virtual void init() = 0;
     virtual void testMe() = 0;
+    virtual void update(uint8_t hour, uint8_t minute, uint8_t second) = 0;
 
     virtual void drawPreIt() = 0;
     virtual void drawPreIs() = 0;
@@ -18,7 +19,7 @@ public:
     virtual void drawMinFive() = 0;
     virtual void drawMinTen() = 0;
     virtual void drawMinQuarter() = 0;
-    virtual void drawMeTwenty() = 0;
+    virtual void drawMinTwenty() = 0;
     virtual void drawMinTwentyFive() = 0;
     virtual void drawMinHalf() = 0;
 

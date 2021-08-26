@@ -60,3 +60,6 @@ const neopixel_fpanel_layout_ LAYOUT = {
 #define PIXEL_PIN 6
 #define PIXEL_PER_CHAR 2
 #define PIXEL_DEF_POWER 125
+
+#define RTC_WAKEUP_PIN 2
+#define RTC_SLEEP_TIME 5

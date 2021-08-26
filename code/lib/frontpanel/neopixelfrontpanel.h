@@ -68,6 +68,7 @@ public:
 
     void init();
     void testMe();
+    void update(uint8_t hour, uint8_t minute, uint8_t second);
 
     void drawPreIt();
     void drawPreIs();
@@ -75,7 +76,7 @@ public:
     void drawMinFive();
     void drawMinTen();
     void drawMinQuarter();
-    void drawMeTwenty();
+    void drawMinTwenty();
     void drawMinTwentyFive();
     void drawMinHalf();
 
@@ -101,6 +102,6 @@ public:
     void clear();
 };
 
-extern NeoPixelFrontPanel_ FrontPanel;
+// extern NeoPixelFrontPanel_ FrontPanel;
 
 #endif

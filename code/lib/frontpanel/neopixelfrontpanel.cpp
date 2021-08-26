@@ -56,7 +56,7 @@ void NeoPixelFrontPanel_::testMe()
     delay(1000);
 
     pixels_.clear();
-    drawMeTwenty();
+    drawMinTwenty();
     pixels_.show();
     delay(1000);
 
@@ -146,8 +146,123 @@ void NeoPixelFrontPanel_::testMe()
     delay(1000);
 }
 
+void NeoPixelFrontPanel_::update(uint8_t hour, uint8_t minute, uint8_t second)
+{
+    Serial.print("Update time to:");
+    Serial.print(hour);
+    Serial.print(":");
+    Serial.print(minute);
+    Serial.print(".");
+    Serial.println(second);
+
+    clear();
+
+    drawPreIt();
+    drawPreIs();
+
+    switch (minute)
+    {
+    case 5:
+    case 55:
+        drawMinFive();
+        break;
+    case 10:
+    case 50:
+        drawMinTen();
+        break;
+    case 15:
+    case 45:
+        drawMinQuarter();
+        break;
+    case 20:
+    case 40:
+        drawMinTwenty();
+        break;
+    case 25:
+    case 35:
+        drawMinTwentyFive();
+        break;
+    case 30:
+        drawMinHalf();
+    default:
+        break;
+    }
+
+    if (minute > 30)
+    {
+        drawTypeTo();
+    }
+    else
+    {
+        drawTypePast();
+    }
+
+    switch (hour)
+    {
+    case 1:
+    case 13:
+        drawHourOne();
+        break;
+    case 2:
+    case 14:
+        drawHourTwo();
+        break;
+    case 3:
+    case 15:
+        drawHourThree();
+        break;
+    case 4:
+    case 16:
+        drawHourFour();
+        break;
+    case 5:
+    case 17:
+        drawHourFive();
+        break;
+    case 6:
+    case 18:
+        drawHourSix();
+        break;
+    case 7:
+    case 19:
+        drawHourSeven();
+        break;
+    case 8:
+    case 20:
+        drawHourEight();
+        break;
+    case 9:
+    case 21:
+        drawHourNine();
+        break;
+    case 10:
+    case 22:
+        drawHourTen();
+        break;
+    case 11:
+    case 23:
+        drawHourEleven();
+        break;
+    case 12:
+    case 24:
+        drawHourTwelve();
+        break;
+    default:
+        break;
+    }
+    show();
+
+    return;
+}
+
 void NeoPixelFrontPanel_::drawWord(neopixel_fpanel_word_ word)
 {
+    Serial.print("Draw word: [start: ");
+    Serial.print(word.start);
+    Serial.print(", len: ");
+    Serial.print(word.len);
+    Serial.println("]");
+
     pixels_.fill(color_, word.start, word.len);
 }
 
@@ -173,7 +288,7 @@ void NeoPixelFrontPanel_::drawMinQuarter()
 {
     drawWord(layout_.MIN_QUARTER);
 }
-void NeoPixelFrontPanel_::drawMeTwenty()
+void NeoPixelFrontPanel_::drawMinTwenty()
 {
     drawWord(layout_.MIN_TWENTY);
 }

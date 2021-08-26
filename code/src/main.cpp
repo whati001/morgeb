@@ -1,9 +1,8 @@
 #include <Arduino.h>
-#include <Wire.h>
-#include <ds3231.h>
-#include <Adafruit_NeoPixel.h>
-#include "neopixelfrontpanel.h"
+#include <avr/sleep.h>
+
 #include "morgeb.h"
+#include "RTClib.h"
 
 // NeoPixelFrontPanel
 NeoPixelFrontPanel_ FrontPanel(
@@ -12,53 +11,111 @@ NeoPixelFrontPanel_ FrontPanel(
     Adafruit_NeoPixel::Color(PIXEL_DEF_POWER, PIXEL_DEF_POWER, PIXEL_DEF_POWER),
     PIXEL_PER_CHAR);
 
-struct ts Timestamp;
+// RealTimeClock
+RTC_DS3231 rtc;
 
-void setup()
+uint8_t initRtc()
 {
-  // init serial monitor
-  Serial.begin(9600);
+  pinMode(RTC_WAKEUP_PIN, INPUT_PULLUP);
 
-  // init real time clock
-  Wire.begin();
-  DS3231_init(DS3231_CONTROL_INTCN);
+  if (!rtc.begin())
+  {
+    Serial.println("Failed to start RTC, please validated if all the conections are solid");
+    Serial.flush();
+    return 0;
+  }
+  if (rtc.lostPower())
+  {
+    Serial.println("RTC lost power, lets set the time!");
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
 
-  // init front panel
+  rtc.disableAlarm(1);
+  rtc.disableAlarm(2);
+  rtc.clearAlarm(1);
+  rtc.clearAlarm(2);
+
+  rtc.writeSqwPinMode(DS3231_OFF);
+
+  return 1;
+}
+
+uint8_t initFrontPanel()
+{
   FrontPanel.init();
   FrontPanel.testMe();
 
-  Serial.println("Done initiating everything");
+  return 1;
 }
 
-void readRts(ts *time)
+void setup()
 {
-  DS3231_get(time);
-  // #DEBUG: remove before fly
-  Serial.print("Date : ");
-  Serial.print(time->mday);
-  Serial.print("/");
-  Serial.print(time->mon);
-  Serial.print("/");
-  Serial.print(time->year);
-  Serial.print("\t Hour : ");
-  Serial.print(time->hour);
-  Serial.print(":");
-  Serial.print(time->min);
-  Serial.print(".");
-  Serial.println(time->sec);
+  Serial.begin(9600);
+  Serial.println("Start loading Morgeb clock");
+
+  if (!initRtc())
+  {
+    Serial.println("Failed to load RTC instance");
+    abort();
+  }
+  if (!initFrontPanel())
+  {
+    Serial.println("Failed to load FrontPanel instance");
+    abort();
+  }
+
+  Serial.println("Initialized Morgeb clock properly");
+}
+
+void wakeupISR()
+{
+  sleep_disable();
+  detachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN));
+}
+
+void goSleep()
+{
+  sleep_enable();
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+
+  noInterrupts();
+  attachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN), wakeupISR, LOW);
+
+  Serial.println("Sleep for five minutes");
+  Serial.flush();
+
+  interrupts();
+  sleep_cpu();
+
+  //---------------------------------------------------------------------------
+  /* The program will continue from here when it wakes */
+  //---------------------------------------------------------------------------
+
+  rtc.disableAlarm(1);
+  rtc.clearAlarm(1);
+
+  Serial.println("Woke up, update front panel"); // Print message to show we're back
 }
 
 void loop()
 {
-  ts *curTime = new ts;
-  readRts(curTime);
-  delete curTime;
+  DateTime now = rtc.now();
+  // compute next wakeup, which is a multiple of 5 and has 0 seconds
+  // hence, we substract the current seconds and compute the next smooth minute value
+  DateTime nextWakeup = now -
+                        TimeSpan(0, 0, now.minute(), now.second()) +
+                        TimeSpan(0, 0, (((uint8_t)(now.minute() + RTC_WAKEUP_PIN) / RTC_WAKEUP_PIN)) * RTC_WAKEUP_PIN, 0);
+  rtc.setAlarm1(nextWakeup, DS3231_A1_Minute);
 
-  FrontPanel.clear();
-  FrontPanel.show();
-  delay(5000);
+  Serial.print("Set next wakeup to:");
+  Serial.print(nextWakeup.hour());
+  Serial.print(":");
+  Serial.print(nextWakeup.minute());
+  Serial.print(".");
+  Serial.println(nextWakeup.second());
 
-  FrontPanel.drawPreIt();
-  FrontPanel.show();
-  delay(5000);
+  FrontPanel.update(now.hour(), now.minute(), now.second());
+
+  // sleep until we need to update the clock again
+  goSleep();
 }
