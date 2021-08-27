@@ -67,11 +67,29 @@ Finally, we need to grind everything a bit and magically everything will suite t
 ![holegalsMeet](./assets/holeglasMeet.jpg)
 
 ## Hardware
+This section will show you which and how we have implemented your hardware.
+
+### LED
+Because we wanted to use controllable RGB leds, we sticked to the [NeoPixels](https://www.adafruit.com/category/168). Unfortunatley, this was your first project with such parts and we ordered the [2020](https://www.adafruit.com/product/4684) variante.
+
+Because those are quite small to solder, we decided to build a [PCB](https://en.wikipedia.org/wiki/Printed_circuit_board) which can hold up to five LEDs. Because want to use two LEDs per character, each position can be bridged.
+Please find the Schematic, Gerber and BOM in [pcb/neoPixelPinout](./pcb/neoPixelPinout/).
+
+![ledPCB](./assets/ledPCB.png)
+
+Each character will be lighed up via such a PCB mounted with two neo pixels each.
+
+![ledPCBWood](./assets/ledPCBWood.jpg)
+
+
+**!! need to wait for my oven to solder all the pcb!!**
+
+### Controller
+For the controller, we have picked an [AtMega382p](http://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf) in combination with a [DS3231](https://datasheets.maximintegrated.com/en/ds/DS3231.pdf) RTC.
 
 
 
 ## Software
+Please checkout the [code](./code) directory.
 
-## FrontPanel
-The 
 
