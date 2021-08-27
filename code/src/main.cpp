@@ -3,6 +3,7 @@
 
 #include "morgeb.h"
 #include "RTClib.h"
+#include "neopixelfrontpanel.h"
 
 // NeoPixelFrontPanel
 NeoPixelFrontPanel_ FrontPanel(

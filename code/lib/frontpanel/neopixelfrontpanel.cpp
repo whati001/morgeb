@@ -4,8 +4,8 @@
 uint64_t NeoPixelFrontPanel_::getPixelCount() const
 {
     uint64_t pixelCount = 0;
-    neopixel_fpanel_word_ *curWord = (neopixel_fpanel_word_ *)&layout_;
-    for (uint8_t idx = 0; idx < neopixel_fpanel_layout_len_; idx++)
+    fpanel_word_ *curWord = (fpanel_word_ *)&layout_;
+    for (uint8_t idx = 0; idx < fpanel_layout_len_; idx++)
     {
 
         pixelCount += (curWord + idx)->len;
@@ -13,8 +13,14 @@ uint64_t NeoPixelFrontPanel_::getPixelCount() const
     return pixelCount;
 }
 
-NeoPixelFrontPanel_::NeoPixelFrontPanel_(neopixel_fpanel_layout_ layout, uint16_t pin, uint32_t color, uint8_t pixelPerChar)
-    : FrontPanel_(), pin_(pin), color_(color), pixelPerChar_(pixelPerChar), layout_(layout){};
+NeoPixelFrontPanel_::NeoPixelFrontPanel_(fpanel_layout_ layout, uint32_t color)
+    : FrontPanel_(layout), color_(color), pin_(DEF_PIN), pixelPerChar_(DEF_PIXEL_PER_CHAR){};
+
+NeoPixelFrontPanel_::NeoPixelFrontPanel_(fpanel_layout_ layout, uint32_t color, uint16_t pin)
+    : FrontPanel_(layout), color_(color), pin_(pin), pixelPerChar_(DEF_PIXEL_PER_CHAR){};
+
+NeoPixelFrontPanel_::NeoPixelFrontPanel_(fpanel_layout_ layout, uint32_t color, uint16_t pin, uint8_t pixelPerChar)
+    : FrontPanel_(layout), color_(color), pin_(pin), pixelPerChar_(pixelPerChar){};
 
 void NeoPixelFrontPanel_::init()
 {
@@ -255,7 +261,7 @@ void NeoPixelFrontPanel_::update(uint8_t hour, uint8_t minute, uint8_t second)
     return;
 }
 
-void NeoPixelFrontPanel_::drawWord(neopixel_fpanel_word_ word)
+void NeoPixelFrontPanel_::drawWord(fpanel_word_ word)
 {
     Serial.print("Draw word: [start: ");
     Serial.print(word.start);
