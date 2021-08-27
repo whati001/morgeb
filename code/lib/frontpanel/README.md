@@ -87,40 +87,6 @@ void loop() {
     FrontPanel.update(hh, mm, ss);
 }
 ```
-
-## Functions and Parameters
-
-#### void begin(int windowSize, double weightThreshold)
-
-- the call of this function is necessary to start the stabilizer
-* @param windowSize represents the size of the moving window
-
-* @param weightThreshold represents the weight/noise threshold - e.g. 0.1g
-
-Try to adjust these two parameters to fit your project. The more you increase the windowSize, the smoother the output will be but at the same time the scale will become unresponsive.
-
-Also weightThreshold or noise threshold will determine what you perceive as noise / measurement error and what should be real data. For example a weightThreshold of 0.01 means that every data change thats below +/- 0.0.1 is considered as noise.
-
-#### void add(double reading)
-
-- call this function to add a new data point to the ScaleStabilizer
-
-- @param reading: ADC value/reading
-
-#### double getStablilizedReading(double displayResolution = 0.1, int decimalPlaces = 1)
-
-- returns the stabilized load cell reading
-
-- @param displayResolution represents the output resolution - e.g. 0.1g accuracy
-
-- @param decimalPlaces represents the decimal places present in the output
-
-- @default values for the parameters are 0.1g and 1 decimal place
-
-Try to adjust these two parameters to fit your project. Via the displayResolution you can set the expected output resolution. For example if you need a scale to only be able to display the weight in 0.5g steps, you can set the displayResolution to 0.5g and the output will be e.g. 15.0g ... 15.5g ... 16g ...
-
-Accordingly, the parameter decimalPlaces allows you to set the preferred amount of decimal places e.g. decimalPlaces = 1 --> 15.5g or decimalPlaces = 2 --> 15.55g
-
 ## Limitations
 
 This Software is provided as-is!
