@@ -1,5 +1,5 @@
 
-#include "frontpanel.h"
+#include "fp.h"
 
 /*
  * Morgeb - english front panel powered via neopixels
@@ -7,59 +7,63 @@
 
 /*
  * Morgeb english front panel layout
- *  <char>/<index>
- * I/00    T/01   L/--   I/02   S/03   A/--   S/--   A/--   M/--   P/--   M/--
- * A/--    C/--   Q/10   U/09   A/08   R/07   T/06   E/05   R/04   D/--   C/--
- * T/11    W/12   E/13   N/14   T/15   Y/16   F/17   I/18   V/19   E/20   X/--
- * H/29    A/28   L/27   F/26   S/--   T/25   E/24   N/23   F/--   T/22   O/21
- * P/30    A/31   S/32   T/33   E/--   R/--   U/--   N/34   I/35   N/36   E/37
- * O/48    N/47   E/46   S/45   I/44   X/43   T/42   H/41   R/40   E/39   E/38
- * F/49    O/50   U/51   R/52   F/53   I/54   V/55   E/56   T/57   W/58   O/59
- * E/70    I/69   G/68   H/67   T/66   E/65   L/64   E/63   V/62   E/61   N/60
- * S/71    E/72   V/73   E/74   N/75   T/76   W/77   E/78   L/79   V/80   E/81
- * T/90    E/89   N/88   S/--   E/--   O/87   C/86   L/85   O/84   C/83   K/82
+ *  <char>/<index>-<pin>
+ * Pin03: I/000    T/001   L/002   I/003   S/004   A/005   S/006   A/007   M/008   P/009   M/010
+ * Pin04: A/011    C/012   Q/013   U/014   A/015   R/016   T/017   E/018   R/019   D/020   C/021
+ * Pin05: T/022    W/023   E/024   N/025   T/026   Y/027   F/028   I/029   V/030   E/031   X/032
+ * Pin06: H/033    A/034   L/035   F/036   S/037   T/038   E/039   N/040   F/041   T/042   O/043
+ * Pin07: P/044    A/045   S/046   T/047   E/048   R/049   U/050   N/051   I/052   N/053   E/054
+ * Pin08: O/055    N/056   E/057   S/058   I/059   X/060   T/061   H/062   R/063   E/064   E/065
+ * Pin09: F/066    O/067   U/068   R/069   F/070   I/071   V/072   E/073   T/074   W/075   O/076
+ * Pin10: E/077    I/078   G/079   H/080   T/081   E/082   L/083   E/084   V/085   E/086   N/087
+ * Pin11: S/088    E/089   V/090   E/091   N/092   T/093   W/094   E/095   L/096   V/097   E/098
+ * Pin12: T/099    E/100   N/101   S/102   E/103   O/104   C/105   L/106   O/107   C/108   K/109
  */
 
-const fpanel_layout_ LAYOUT = {
+const fp_layout_ LAYOUT = {
     // prefix words
-    {0, 2}, // PRE IT
-    {2, 2}, // PRE IS
+    {0, 2, 3}, // PRE IT
+    {3, 2, 3}, // PRE IS
 
     // minutes words
-    {17, 4}, // MIN FIVE
-    {23, 3}, // MIN TEN
-    {4, 7},  // MIN QUARTER
-    {11, 6}, // MIN TWENTY
-    {11, 9}, // MIN TWENTYFIVE
-    {26, 4}, // MIN HALF
+    {28, 4, 5}, // MIN FIVE
+    {38, 3, 6}, // MIN TEN
+    {13, 7, 4}, // MIN QUARTER
+    {22, 6, 5}, // MIN TWENTY
+    {22, 10, 5}, // MIN TWENTYFIVE
+    {33, 4, 6}, // MIN HALF
 
     // type words
-    {30, 4}, // TYPE PAST
-    {21, 2}, // TYPE TO
+    {44, 4, 7}, // TYPE PAST
+    {42, 2, 6}, // TYPE TO
 
     // hours words
-    {46, 3}, // HOUR ONE
-    {57, 3}, // HOUR TWO
-    {38, 4}, // HOUR THREE
-    {49, 4}, // HOUR FOUR
-    {53, 4}, // HOUR FIVE
-    {43, 3}, // HOUR SIX
-    {71, 4}, // HOUR SEVEN
-    {70, 5}, // HOUR EIGHT
-    {34, 4}, // HOUR NINE
-    {88, 3}, // HOUR TEN
-    {60, 6}, // HOUR ELEVEN
-    {76, 6}, // HOUR TWELVE
+    {55, 3, 8},  // HOUR ONE
+    {74, 3, 9},  // HOUR TWO
+    {61, 5, 8},  // HOUR THREE
+    {66, 4, 9},  // HOUR FOUR
+    {70, 4, 9},  // HOUR FIVE
+    {58, 3, 8},  // HOUR SIX
+    {88, 5, 11}, // HOUR SEVEN
+    {77, 5, 10},  // HOUR EIGHT
+    {51, 4, 7},  // HOUR NINE
+    {99, 3, 12}, // HOUR TEN
+    {82, 6, 10},  // HOUR ELEVEN
+    {93, 6, 11}, // HOUR TWELVE
 
     // full clock word
-    {82, 6} // FULL OCLOCK
+    {104, 6, 12} // FULL OCLOCK
 
 };
 
+const fp_dimension_ LAYOUT_DIMENSION = {
+    10, // heigth
+    11  // width
+};
+
 // define how many pixels are used to light up each character
-#define PIXEL_PIN 6
-#define PIXEL_PER_CHAR 2
-#define PIXEL_DEF_POWER 125
+#define PIXEL_PER_CHAR 8
+#define PIXEL_DEF_POWER 50
 
 #define RTC_WAKEUP_PIN 2
 #define RTC_SLEEP_TIME 5

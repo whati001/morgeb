@@ -3,19 +3,16 @@
 
 #include "morgeb.h"
 #include "RTClib.h"
-#include "neopixelfrontpanel.h"
 
-// NeoPixelFrontPanel
-NeoPixelFrontPanel_ FrontPanel(
-    LAYOUT,
-    PIXEL_PIN,
-    Adafruit_NeoPixel::Color(PIXEL_DEF_POWER, PIXEL_DEF_POWER, PIXEL_DEF_POWER),
-    PIXEL_PER_CHAR);
+#include "fp-sk6812.h"
+
+fp_color_ color = {0, 0, 0, PIXEL_DEF_POWER};
+SK6812FrontPanel_ frontpanel(LAYOUT_DIMENSION, LAYOUT, PIXEL_PER_CHAR, color);
 
 // RealTimeClock
 RTC_DS3231 rtc;
 
-uint8_t initRtc()
+uint8_t init_rtc()
 {
   pinMode(RTC_WAKEUP_PIN, INPUT_PULLUP);
 
@@ -41,25 +38,25 @@ uint8_t initRtc()
   return 1;
 }
 
-uint8_t initFrontPanel()
+uint8_t init_frontpanel()
 {
-  FrontPanel.init();
-  FrontPanel.testMe();
-
+  frontpanel.init();
+  frontpanel.test_me();
   return 1;
 }
 
 void setup()
 {
   Serial.begin(9600);
+  delay(100);
   Serial.println("Start loading Morgeb clock");
 
-  if (!initRtc())
+  if (!init_rtc())
   {
     Serial.println("Failed to load RTC instance");
     abort();
   }
-  if (!initFrontPanel())
+  if (!init_frontpanel())
   {
     Serial.println("Failed to load FrontPanel instance");
     abort();
@@ -82,7 +79,9 @@ void goSleep()
   noInterrupts();
   attachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN), wakeupISR, LOW);
 
-  Serial.println("Sleep for five minutes");
+  Serial.print("Sleep for ");
+  Serial.print(RTC_SLEEP_TIME);
+  Serial.println(" minute");
   Serial.flush();
 
   interrupts();
@@ -108,6 +107,11 @@ void loop()
                         TimeSpan(0, 0, ((now.minute() + RTC_SLEEP_TIME) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
   rtc.setAlarm1(nextWakeup, DS3231_A1_Minute);
 
+  // #TODO: find a better logic
+  DateTime now_five_base = now -
+                           TimeSpan(0, 0, now.minute(), now.second()) +
+                           TimeSpan(0, 0, ((now.minute()) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
+
   Serial.print("Set next wakeup to:");
   Serial.print(nextWakeup.hour());
   Serial.print(":");
@@ -115,7 +119,7 @@ void loop()
   Serial.print(".");
   Serial.println(nextWakeup.second());
 
-  FrontPanel.update(now.hour(), now.minute(), now.second());
+  frontpanel.update(now_five_base.hour(), now_five_base.minute(), now_five_base.second());
 
   // sleep until we need to update the clock again
   goSleep();
