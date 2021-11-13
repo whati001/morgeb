@@ -1,28 +1,58 @@
 #ifndef FP_SK6812_H
 #define FP_SK6812_H
 
-#include "fp-color.h"
+#include "fp.h"
 
-#define FP_PIN_ORDER_LEN 10
-const uint8_t FP_DEF_PIN_ORDER[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 #define FP_DEF_PIXEL_PER_CHAR 1
 
-class SK6812FrontPanel_ : public ColorFrontpanel_
+/*
+ * Struct to describe which color the frontpanel should light up
+ */
+struct fp_color_
+{
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    uint8_t white;
+};
+
+/*
+ * Default color for on state
+ */
+#define FP_DEF_ON_COLOR \
+    {                   \
+        0, 0, 0, 10     \
+    }
+
+/*
+ * Default color for off state
+ */
+#define FP_DEF_OFF_COLOR \
+    {                    \
+        0, 0, 0, 0       \
+    }
+
+/*
+ * Default amount of leds per character
+ */
+#define FP_DEF_LEDS_PER_CHAR 1
+
+class SK6812FrontPanel_ : public FrontPanel_
 {
 private:
-    uint8_t pin_order_[10];
-    uint8_t pixels_per_char_;
+    fp_color_ on_color_;
+    fp_color_ off_color_;
 
     uint64_t getPixelCount() const;
+
     void drawWord(fp_word_ word);
 
 public:
-    SK6812FrontPanel_(fp_layout_ layout);
-    SK6812FrontPanel_(fp_layout_ layout, fp_color_ color);
-    SK6812FrontPanel_(fp_layout_ layout, fp_color_ color, uint8_t pin_order[]);
-    SK6812FrontPanel_(fp_layout_ layout, fp_color_ color, uint8_t pin_order[], uint8_t pixels_per_char);
+    SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout);
+    SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char);
+    SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char, fp_color_ color);
 
-    // void init();
+    // uint8_t init();
     // void testMe();
     // void update(uint8_t hour, uint8_t minute, uint8_t second);
 

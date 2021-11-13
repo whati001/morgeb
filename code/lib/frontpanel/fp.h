@@ -8,18 +8,42 @@
  * each word on the front panel is defined via:
  *   - start index
  *   - len of the word, due to it consists of consecutive characters
+ *   - pin index -> will be mapped to pin_ordering_ array
  */
 struct fp_word_
 {
     uint8_t start;
     uint8_t len;
+    uint8_t pin;
 };
 
 /*
  * Struct to describe all the words from your front panel
  * each word is encoded via the struct fp_word_
  */
-#define fpanel_layout_len_ 23
+#define FPANEL_LAYOUT_WORD_COUNT_ 23
+
+/*
+ * Default amount of pixels per character
+ */
+#define FPANEL_DEF_PIXEL_PER_CHAR 1
+
+/*
+ * The Frontpanel is more or less a matrix of leds
+ * The aim of this struct is to evaluate how many
+ * characters are in a single row
+ */
+struct fp_dimension_
+{
+    uint8_t height;
+    uint8_t width;
+};
+
+/*
+ * This struct defines where the words are to light up
+ * In addition, the pin already identifies how many characters
+ * are connected into a single strip
+ */
 struct fp_layout_
 {
     fp_word_ PRE_IT;
@@ -51,16 +75,67 @@ struct fp_layout_
     fp_word_ FULL_OCLOCK;
 };
 
+/*
+ * This class will handle all the lightning.
+ * To simplify everything, we do not work here with 
+ * leds counts, instead with character counts.
+ * 
+ * To guaranty nice consistent lightning, multiple leds per char
+ * can be used. The amount of leds is defined via the member variable
+ * leds_per_char_, which can be set via ctor or setter.
+ * 
+ * The class will hold an uint_8 array with 1 and 0, which represent
+ * on and off respectively.
+ * 
+ * In addition, this lib assumes, that each character is equipped 
+ * with leds, otherwise the computation will not work out
+ *
+ * #TODO: add support for skipping unused characters
+ */
 class FrontPanel_
 {
+public:
+    /*
+     * Iterate over the fp_layout_ and prepare the
+     * uint_8 array holding the on and off values grouped by
+     * the pin number
+     * 
+     * This function will set following member values properly
+     *  * layout_rows_
+     *  * layout_rows_pin_map_
+     * 
+     */
+    uint8_t init();
+
 protected:
+    /*
+     * Holds the dimension of the frontpanel
+     */
+    fp_dimension_ dimension_;
+    /*
+     * Holds the layout of the frontpanel
+     */
     fp_layout_ layout_;
+    /*
+     * Holds the amount of leds per char
+     */
+    uint8_t leds_per_char_;
+    /*
+     * Holds the on/off values for each row
+     * It's an two dimensional array
+     */
+    uint8_t **layout_rows_;
+    /*
+     * Array holding the pin number for each row
+     */
+    uint8_t *layout_rows_pin_map_;
 
 public:
-    FrontPanel_();
-    FrontPanel_(fp_layout_ layout);
+    FrontPanel_(fp_dimension_ dimension, fp_layout_ layout);
+    FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char_);
 
-    // virtual void init() = 0;
+    ~FrontPanel_();
+
     // virtual void testMe() = 0;
     // virtual void update(uint8_t hour, uint8_t minute, uint8_t second) = 0;
 

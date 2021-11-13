@@ -7,46 +7,51 @@
 #include "fp-sk6812.h"
 
 fp_color_ color = {0, 0, 0, PIXEL_DEF_POWER};
-SK6812FrontPanel_ frontpanel(LAYOUT, color, (uint8_t *)LAYOUT_PIN_ORDER, PIXEL_PER_CHAR);
+SK6812FrontPanel_ frontpanel(LAYOUT_DIMENSION, LAYOUT, PIXEL_PER_CHAR, color);
 
+#include <SK6812.h>
 
-// #include <SK6812.h>
-
-// #define LED_COUNT 88
-// SK6812 LED1(LED_COUNT);
-// SK6812 LED2(LED_COUNT);
-// SK6812 LED3(LED_COUNT);
-// SK6812 LED4(LED_COUNT);
-// SK6812 LED5(LED_COUNT);
-// SK6812 LED6(LED_COUNT);
-// SK6812 LED7(LED_COUNT);
-// SK6812 LED8(LED_COUNT);
-// SK6812 LED9(LED_COUNT);
-// SK6812 LED10(LED_COUNT);
+#define LED_COUNT 88
+SK6812 LED(LED_COUNT);
 
 void setup()
 {
   Serial.begin(9600);
-  // LED1.set_output(2);
-  // LED2.set_output(3);
-  // LED3.set_output(4);
-  // LED4.set_output(5);
-  // LED5.set_output(6);
-  // LED6.set_output(7);
-  // LED7.set_output(8);
-  // LED8.set_output(9);
-  // LED9.set_output(10);
-  // LED10.set_output(11);
+  delay(1000);
+
+  
+
+  LED.set_output(2);
   Serial.println("SETUP DONE\n");
+  frontpanel.init();
+  for (uint8_t i = 0; i < LED_COUNT; i++)
+  {
+    LED.set_rgbw(i, {0, 0, 0, 10});
+  }
+  LED.sync();
 }
 
 void loop()
 {
 
-  // set_all_leds({0, 0, 0, 0});
-  // set_all_leds({0, 0, 0, 5});
-  Serial.println("LOOP EDN\n");
+  for (uint8_t i = 0; i < LED_COUNT; i++)
+  {
+    LED.set_rgbw(i, {0, 0, 10, 0});
+  }
+  LED.sync();
   delay(1000);
+  for (uint8_t i = 0; i < LED_COUNT; i++)
+  {
+    LED.set_rgbw(i, {0, 0, 0, 0});
+  }
+  LED.sync();
+  delay(1000);
+
+  LED.send_poc();
+  delay(1000);
+
+  Serial.println("ANDI:");
+
   // set_all_leds({0, 0, 0, 10});
   // set_all_leds({0, 10, 0, 0});
 
