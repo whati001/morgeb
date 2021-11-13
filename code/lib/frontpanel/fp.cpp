@@ -51,18 +51,48 @@ uint8_t FrontPanel_::clear_row(uint8_t row)
     return 1;
 }
 
+uint8_t FrontPanel_::clear_all()
+{
+    for (uint8_t idx = 0; idx < dimension_.height; idx++)
+    {
+        if (clear_row(idx) == 0)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 uint8_t FrontPanel_::draw_word(fp_word_ *word)
 {
     uint8_t row_idx = word->start / dimension_.width;
+    uint8_t row_start = word->start - (row_idx * dimension_.width);
+
     if (row_idx > dimension_.height)
     {
         return 0;
     }
-    if (word->start + word->len > dimension_.width)
+    if (row_start + word->len > dimension_.width)
     {
         return 0;
     }
 
-    memset(&layout_rows_[row_idx][word->start], 1, sizeof(uint8_t) * word->len);
+    memset(&layout_rows_[row_idx][row_start], 1, sizeof(uint8_t) * word->len);
     return 1;
+}
+
+void FrontPanel_::test_me()
+{
+    clear_all();
+    sync_all();
+    delay(1000);
+
+    for (uint8_t idx = 0; idx < FP_LAYOUT_WORD_COUNT; idx++)
+    {
+        fp_word_ *word = ((fp_word_ *)&layout_) + idx;
+        clear_all();
+        draw_word(word);
+        sync_all();
+        delay(1000);
+    }
 }

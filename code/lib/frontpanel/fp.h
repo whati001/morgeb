@@ -137,38 +137,42 @@ public:
     ~FrontPanel_();
 
     uint8_t clear_row(uint8_t row);
+    uint8_t clear_all();
     uint8_t draw_word(fp_word_ *word);
+    void test_me();
 
-    // virtual void testMe() = 0;
-    // virtual void update(uint8_t hour, uint8_t minute, uint8_t second) = 0;
+    virtual uint8_t sync_row(uint8_t row) = 0;
+    virtual uint8_t sync_all() = 0;
 
-    // virtual void drawPreIt() = 0;
-    // virtual void drawPreIs() = 0;
+    virtual void update(uint8_t hour, uint8_t minute, uint8_t second) = 0;
 
-    // virtual void drawMinFive() = 0;
-    // virtual void drawMinTen() = 0;
-    // virtual void drawMinQuarter() = 0;
-    // virtual void drawMinTwenty() = 0;
-    // virtual void drawMinTwentyFive() = 0;
-    // virtual void drawMinHalf() = 0;
+    virtual void draw_pre_it() = 0;
+    virtual void draw_pre_is() = 0;
 
-    // virtual void drawTypePast() = 0;
-    // virtual void drawTypeTo() = 0;
+    virtual void draw_min_five() = 0;
+    virtual void draw_min_ten() = 0;
+    virtual void draw_min_quarter() = 0;
+    virtual void draw_min_twenty() = 0;
+    virtual void draw_min_twentyfive() = 0;
+    virtual void draw_min_half() = 0;
 
-    // virtual void drawHourOne() = 0;
-    // virtual void drawHourTwo() = 0;
-    // virtual void drawHourThree() = 0;
-    // virtual void drawHourFour() = 0;
-    // virtual void drawHourFive() = 0;
-    // virtual void drawHourSix() = 0;
-    // virtual void drawHourSeven() = 0;
-    // virtual void drawHourEight() = 0;
-    // virtual void drawHourNine() = 0;
-    // virtual void drawHourTen() = 0;
-    // virtual void drawHourEleven() = 0;
-    // virtual void drawHourTwelve() = 0;
+    virtual void draw_type_past() = 0;
+    virtual void draw_type_to() = 0;
 
-    // virtual void drawFulloclock() = 0;
+    virtual void draw_hour_one() = 0;
+    virtual void draw_hour_two() = 0;
+    virtual void draw_hour_three() = 0;
+    virtual void draw_hour_four() = 0;
+    virtual void draw_hour_five() = 0;
+    virtual void draw_hour_six() = 0;
+    virtual void draw_hour_seven() = 0;
+    virtual void draw_hour_eight() = 0;
+    virtual void draw_hour_nine() = 0;
+    virtual void draw_hour_ten() = 0;
+    virtual void draw_hour_eleven() = 0;
+    virtual void draw_hour_twelve() = 0;
+
+    virtual void draw_full_oclock() = 0;
 };
 
 #endif

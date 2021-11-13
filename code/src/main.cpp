@@ -41,7 +41,7 @@ uint8_t init_rtc()
 uint8_t init_frontpanel()
 {
   frontpanel.init();
-  // frontpanel.set_output(2);
+  frontpanel.test_me();
   return 1;
 }
 
@@ -65,111 +65,62 @@ void setup()
   Serial.println("Initialized Morgeb clock properly");
 }
 
-void loop()
+void wakeupISR()
 {
-  delay(1000);
-  frontpanel.clear_row(0);
-  frontpanel.draw_word((fp_word_ *)&LAYOUT.PRE_IT);
-  frontpanel.sync_row_data(0);
-  delay(1000);
-  frontpanel.clear_row(0);
-  frontpanel.draw_word((fp_word_ *)&LAYOUT.PRE_IS);
-  frontpanel.sync_row_data(0);
-  frontpanel.clear_row(0);
-  frontpanel.sync_row_data(0);
-  Serial.println("LOOP DONE");
-
-  // set_all_leds({0, 0, 0, 10});
-  // set_all_leds({0, 10, 0, 0});
-
-  //   set_all_leds({0, 0, 0, 0});
-  // for (uint8_t i = 0; i < 88; i++) {
-  //   LED.set_rgbw(i, {0, 0, 0, 5});
-  //   LED.sync();
-  //   delay(300);
-  // }
-
-  //     for (uint16_t idx = 0; idx <= LED_COUNT; idx++) {
-
-  //   LED.set_rgbw(idx, {100, 0, 0, 0}); // Set second LED to white (using only W channel)
-  //   }
-  // LED.sync();
-
-  // delay(1000);
-
-  //     for (uint16_t idx = 0; idx <= LED_COUNT; idx++) {
-
-  //   LED.set_rgbw(idx, {0, 100, 0, 0}); // Set second LED to white (using only W channel)
-  //   }
-  // LED.sync();
-
-  // delay(1000);
-
-  //     for (uint16_t idx = 0; idx <= LED_COUNT; idx++) {
-
-  //   LED.set_rgbw(idx, {0, 0, 100, 0}); // Set second LED to white (using only W channel)
-  //   }
-  // LED.sync();
-
-  // delay(1000);
+  sleep_disable();
+  detachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN));
 }
 
-// // NeoPixelFrontPanel
-// NeoPixelFrontPanel_ FrontPanel(
-//     LAYOUT,
-//     PIXEL_PIN,
-//     Adafruit_NeoPixel::Color(PIXEL_DEF_POWER, PIXEL_DEF_POWER, PIXEL_DEF_POWER),
-//     PIXEL_PER_CHAR);
+void goSleep()
+{
+  sleep_enable();
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
-// void wakeupISR()
-// {
-//   sleep_disable();
-//   detachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN));
-// }
+  noInterrupts();
+  attachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN), wakeupISR, LOW);
 
-// void goSleep()
-// {
-//   sleep_enable();
-//   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  Serial.print("Sleep for ");
+  Serial.print(RTC_SLEEP_TIME);
+  Serial.println(" minute");
+  Serial.flush();
 
-//   noInterrupts();
-//   attachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN), wakeupISR, LOW);
+  interrupts();
+  sleep_cpu();
 
-//   Serial.println("Sleep for five minutes");
-//   Serial.flush();
+  //---------------------------------------------------------------------------
+  /* The program will continue from here when it wakes */
+  //---------------------------------------------------------------------------
 
-//   interrupts();
-//   sleep_cpu();
+  rtc.disableAlarm(1);
+  rtc.clearAlarm(1);
 
-//   //---------------------------------------------------------------------------
-//   /* The program will continue from here when it wakes */
-//   //---------------------------------------------------------------------------
+  Serial.println("Woke up, update front panel"); // Print message to show we're back
+}
 
-//   rtc.disableAlarm(1);
-//   rtc.clearAlarm(1);
+void loop()
+{
+  DateTime now = rtc.now();
+  // compute next wakeup, which is a multiple of 5 and has 0 seconds
+  // hence, we substract the current seconds and compute the next smooth minute value
+  DateTime nextWakeup = now -
+                        TimeSpan(0, 0, now.minute(), now.second()) +
+                        TimeSpan(0, 0, ((now.minute() + RTC_SLEEP_TIME) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
+  rtc.setAlarm1(nextWakeup, DS3231_A1_Minute);
 
-//   Serial.println("Woke up, update front panel"); // Print message to show we're back
-// }
+  // #TODO: find a better logic
+  DateTime now_five_base = now -
+                           TimeSpan(0, 0, now.minute(), now.second()) +
+                           TimeSpan(0, 0, ((now.minute()) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
 
-// void loop()
-// {
-//   DateTime now = rtc.now();
-//   // compute next wakeup, which is a multiple of 5 and has 0 seconds
-//   // hence, we substract the current seconds and compute the next smooth minute value
-//   DateTime nextWakeup = now -
-//                         TimeSpan(0, 0, now.minute(), now.second()) +
-//                         TimeSpan(0, 0, ((now.minute() + RTC_SLEEP_TIME) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
-//   rtc.setAlarm1(nextWakeup, DS3231_A1_Minute);
+  Serial.print("Set next wakeup to:");
+  Serial.print(nextWakeup.hour());
+  Serial.print(":");
+  Serial.print(nextWakeup.minute());
+  Serial.print(".");
+  Serial.println(nextWakeup.second());
 
-//   Serial.print("Set next wakeup to:");
-//   Serial.print(nextWakeup.hour());
-//   Serial.print(":");
-//   Serial.print(nextWakeup.minute());
-//   Serial.print(".");
-//   Serial.println(nextWakeup.second());
+  frontpanel.update(now_five_base.hour(), now_five_base.minute(), now_five_base.second());
 
-//   FrontPanel.update(now.hour(), now.minute(), now.second());
-
-//   // sleep until we need to update the clock again
-//   goSleep();
-// }
+  // sleep until we need to update the clock again
+  goSleep();
+}

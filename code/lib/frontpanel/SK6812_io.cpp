@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include "fp-sk6812.h"
 
 /*
@@ -62,7 +61,7 @@
 #define w_nop8 w_nop4 w_nop4
 #define w_nop16 w_nop8 w_nop8
 
-uint8_t SK6812FrontPanel_::sync_row_data(uint8_t row)
+uint8_t SK6812FrontPanel_::sync_row(uint8_t row)
 {
   if (row > dimension_.height)
   {

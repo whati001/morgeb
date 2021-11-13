@@ -42,41 +42,41 @@ public:
     SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char);
     SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char, fp_color_ color);
 
-    uint8_t sync_row_data(uint8_t row);
+    uint8_t sync_row(uint8_t row);
+    uint8_t sync_all();
 
-    // void testMe();
-    // void update(uint8_t hour, uint8_t minute, uint8_t second);
+    void update(uint8_t hour, uint8_t minute, uint8_t second);
 
-    // void drawPreIt();
-    // void drawPreIs();
+    void draw_pre_it();
+    void draw_pre_is();
 
-    // void drawMinFive();
-    // void drawMinTen();
-    // void drawMinQuarter();
-    // void drawMinTwenty();
-    // void drawMinTwentyFive();
-    // void drawMinHalf();
+    void draw_min_five();
+    void draw_min_ten();
+    void draw_min_quarter();
+    void draw_min_twenty();
+    void draw_min_twentyfive();
+    void draw_min_half();
 
-    // void drawTypePast();
-    // void drawTypeTo();
+    void draw_type_past();
+    void draw_type_to();
 
-    // void drawHourOne();
-    // void drawHourTwo();
-    // void drawHourThree();
-    // void drawHourFour();
-    // void drawHourFive();
-    // void drawHourSix();
-    // void drawHourSeven();
-    // void drawHourEight();
-    // void drawHourNine();
-    // void drawHourTen();
-    // void drawHourEleven();
-    // void drawHourTwelve();
+    void draw_hour_one();
+    void draw_hour_two();
+    void draw_hour_three();
+    void draw_hour_four();
+    void draw_hour_five();
+    void draw_hour_six();
+    void draw_hour_seven();
+    void draw_hour_eight();
+    void draw_hour_nine();
+    void draw_hour_ten();
+    void draw_hour_eleven();
+    void draw_hour_twelve();
 
-    // void drawFulloclock();
+    void draw_full_oclock();
 
-    // void show();
-    // void clear();
+    void show();
+    void clear();
 };
 
 #endif
