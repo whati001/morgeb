@@ -21,12 +21,12 @@ struct fp_word_
  * Struct to describe all the words from your front panel
  * each word is encoded via the struct fp_word_
  */
-#define FPANEL_LAYOUT_WORD_COUNT_ 23
+#define FP_LAYOUT_WORD_COUNT 23
 
 /*
  * Default amount of pixels per character
  */
-#define FPANEL_DEF_PIXEL_PER_CHAR 1
+#define FP_DEF_LEDS_PER_CHAR 1
 
 /*
  * The Frontpanel is more or less a matrix of leds
@@ -135,6 +135,9 @@ public:
     FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char_);
 
     ~FrontPanel_();
+
+    uint8_t clear_row(uint8_t row);
+    uint8_t draw_word(fp_word_ *word);
 
     // virtual void testMe() = 0;
     // virtual void update(uint8_t hour, uint8_t minute, uint8_t second) = 0;

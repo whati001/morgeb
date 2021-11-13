@@ -2,7 +2,7 @@
 #include "fp.h"
 #include "stdlib.h"
 
-FrontPanel_::FrontPanel_(fp_dimension_ dimension, fp_layout_ layout) : FrontPanel_(dimension, layout, FPANEL_DEF_PIXEL_PER_CHAR){};
+FrontPanel_::FrontPanel_(fp_dimension_ dimension, fp_layout_ layout) : FrontPanel_(dimension, layout, FP_DEF_LEDS_PER_CHAR){};
 FrontPanel_::FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char) : dimension_(dimension), layout_(layout), leds_per_char_(leds_per_char)
 {
     layout_rows_ = (uint8_t **)malloc(sizeof(uint8_t *) * dimension_.height);
@@ -30,7 +30,7 @@ FrontPanel_::~FrontPanel_()
 
 uint8_t FrontPanel_::init()
 {
-    for (uint8_t idx = 0; idx < FPANEL_LAYOUT_WORD_COUNT_; idx++)
+    for (uint8_t idx = 0; idx < FP_LAYOUT_WORD_COUNT; idx++)
     {
         fp_word_ *word = ((fp_word_ *)&layout_) + idx;
         uint8_t row_idx = word->start / dimension_.width;
@@ -38,5 +38,31 @@ uint8_t FrontPanel_::init()
         // #TODO: add some check if the pin value is greather than available digital pins of board
     }
 
+    return 1;
+}
+
+uint8_t FrontPanel_::clear_row(uint8_t row)
+{
+    if (row > dimension_.height)
+    {
+        return 0;
+    }
+    memset(layout_rows_[row], 0, sizeof(uint8_t) * dimension_.width);
+    return 1;
+}
+
+uint8_t FrontPanel_::draw_word(fp_word_ *word)
+{
+    uint8_t row_idx = word->start / dimension_.width;
+    if (row_idx > dimension_.height)
+    {
+        return 0;
+    }
+    if (word->start + word->len > dimension_.width)
+    {
+        return 0;
+    }
+
+    memset(&layout_rows_[row_idx][word->start], 1, sizeof(word->len) * dimension_.width);
     return 1;
 }

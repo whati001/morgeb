@@ -3,8 +3,6 @@
 
 #include "fp.h"
 
-#define FP_DEF_PIXEL_PER_CHAR 1
-
 /*
  * Struct to describe which color the frontpanel should light up
  */
@@ -32,20 +30,11 @@ struct fp_color_
         0, 0, 0, 0       \
     }
 
-/*
- * Default amount of leds per character
- */
-#define FP_DEF_LEDS_PER_CHAR 1
-
 class SK6812FrontPanel_ : public FrontPanel_
 {
 private:
     fp_color_ on_color_;
     fp_color_ off_color_;
-
-    uint64_t getPixelCount() const;
-
-    void drawWord(fp_word_ word);
 
 public:
     SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout);
