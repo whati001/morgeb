@@ -63,6 +63,6 @@ uint8_t FrontPanel_::draw_word(fp_word_ *word)
         return 0;
     }
 
-    memset(&layout_rows_[row_idx][word->start], 1, sizeof(word->len) * dimension_.width);
+    memset(&layout_rows_[row_idx][word->start], 1, sizeof(uint8_t) * word->len);
     return 1;
 }

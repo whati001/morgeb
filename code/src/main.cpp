@@ -9,48 +9,75 @@
 fp_color_ color = {0, 0, 0, PIXEL_DEF_POWER};
 SK6812FrontPanel_ frontpanel(LAYOUT_DIMENSION, LAYOUT, PIXEL_PER_CHAR, color);
 
-#include <SK6812.h>
+// RealTimeClock
+RTC_DS3231 rtc;
 
-#define LED_COUNT 88
-SK6812 LED(LED_COUNT);
+uint8_t init_rtc()
+{
+  pinMode(RTC_WAKEUP_PIN, INPUT_PULLUP);
+
+  if (!rtc.begin())
+  {
+    Serial.println("Failed to start RTC, please validated if all the conections are solid");
+    Serial.flush();
+    return 0;
+  }
+  if (rtc.lostPower())
+  {
+    Serial.println("RTC lost power, lets set the time!");
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
+
+  rtc.disableAlarm(1);
+  rtc.disableAlarm(2);
+  rtc.clearAlarm(1);
+  rtc.clearAlarm(2);
+
+  rtc.writeSqwPinMode(DS3231_OFF);
+
+  return 1;
+}
+
+uint8_t init_frontpanel()
+{
+  frontpanel.init();
+  // frontpanel.set_output(2);
+  return 1;
+}
 
 void setup()
 {
   Serial.begin(9600);
-  delay(1000);
+  delay(100);
+  Serial.println("Start loading Morgeb clock");
 
-  
-
-  LED.set_output(2);
-  Serial.println("SETUP DONE\n");
-  frontpanel.init();
-  for (uint8_t i = 0; i < LED_COUNT; i++)
+  if (!init_rtc())
   {
-    LED.set_rgbw(i, {0, 0, 0, 10});
+    Serial.println("Failed to load RTC instance");
+    abort();
   }
-  LED.sync();
+  if (!init_frontpanel())
+  {
+    Serial.println("Failed to load FrontPanel instance");
+    abort();
+  }
+
+  Serial.println("Initialized Morgeb clock properly");
 }
 
 void loop()
 {
-
-  for (uint8_t i = 0; i < LED_COUNT; i++)
-  {
-    LED.set_rgbw(i, {0, 0, 10, 0});
-  }
-  LED.sync();
   delay(1000);
-  for (uint8_t i = 0; i < LED_COUNT; i++)
-  {
-    LED.set_rgbw(i, {0, 0, 0, 0});
-  }
-  LED.sync();
+  frontpanel.clear_row(0);
+  frontpanel.draw_word((fp_word_ *)&LAYOUT.PRE_IT);
+  frontpanel.sync_row_data(0);
   delay(1000);
-
-  LED.send_poc();
-  delay(1000);
-
-  Serial.println("ANDI:");
+  frontpanel.clear_row(0);
+  frontpanel.draw_word((fp_word_ *)&LAYOUT.PRE_IS);
+  frontpanel.sync_row_data(0);
+  frontpanel.clear_row(0);
+  frontpanel.sync_row_data(0);
+  Serial.println("LOOP DONE");
 
   // set_all_leds({0, 0, 0, 10});
   // set_all_leds({0, 10, 0, 0});
@@ -93,62 +120,6 @@ void loop()
 //     PIXEL_PIN,
 //     Adafruit_NeoPixel::Color(PIXEL_DEF_POWER, PIXEL_DEF_POWER, PIXEL_DEF_POWER),
 //     PIXEL_PER_CHAR);
-
-// // RealTimeClock
-// RTC_DS3231 rtc;
-
-// uint8_t initRtc()
-// {
-//   pinMode(RTC_WAKEUP_PIN, INPUT_PULLUP);
-
-//   if (!rtc.begin())
-//   {
-//     Serial.println("Failed to start RTC, please validated if all the conections are solid");
-//     Serial.flush();
-//     return 0;
-//   }
-//   if (rtc.lostPower())
-//   {
-//     Serial.println("RTC lost power, lets set the time!");
-//     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-//   }
-
-//   rtc.disableAlarm(1);
-//   rtc.disableAlarm(2);
-//   rtc.clearAlarm(1);
-//   rtc.clearAlarm(2);
-
-//   rtc.writeSqwPinMode(DS3231_OFF);
-
-//   return 1;
-// }
-
-// uint8_t initFrontPanel()
-// {
-//   FrontPanel.init();
-//   FrontPanel.testMe();
-
-//   return 1;
-// }
-
-// void setup()
-// {
-//   Serial.begin(9600);
-//   Serial.println("Start loading Morgeb clock");
-
-//   if (!initRtc())
-//   {
-//     Serial.println("Failed to load RTC instance");
-//     abort();
-//   }
-//   if (!initFrontPanel())
-//   {
-//     Serial.println("Failed to load FrontPanel instance");
-//     abort();
-//   }
-
-//   Serial.println("Initialized Morgeb clock properly");
-// }
 
 // void wakeupISR()
 // {
