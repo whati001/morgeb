@@ -144,7 +144,7 @@ public:
     virtual uint8_t sync_row(uint8_t row) = 0;
     virtual uint8_t sync_all() = 0;
 
-    virtual void update(uint8_t hour, uint8_t minute, uint8_t second) = 0;
+    virtual void update(uint8_t hour, uint8_t minute, uint8_t second);
 
     virtual void draw_pre_it() = 0;
     virtual void draw_pre_is() = 0;

@@ -15,10 +15,9 @@ This Project holds the source code for the project `Morgeb, the friendly clock f
 
 ## Software
 
-The project is powered by an [AtMega382p](http://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf) in combination with a [DS3231](https://datasheets.maximintegrated.com/en/ds/DS3231.pdf) RTC.
+The project is powered by an [AtMega382](http://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf) in combination with a [DS3231](https://datasheets.maximintegrated.com/en/ds/DS3231.pdf) RTC.
 
 ### Used libraries
-- [NeoPixelBus](https://github.com/adafruit/Adafruit_NeoPixel): Handle NeoPixels 2020 leds
 - [FrontPanel(private)](https://github.com/whati001/morgeb/tree/main/code/lib/frontpanel): FrontPanel wrapper lib
 - [RTClib](https://github.com/adafruit/RTClib): Handle DS3231 RTC
 
@@ -45,9 +44,15 @@ void loop()
                         TimeSpan(0, 0, ((now.minute() + RTC_SLEEP_TIME) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
   rtc.setAlarm1(nextWakeup, DS3231_A1_Minute);
 
-  FrontPanel.update(now.hour(), now.minute(), now.second());
+  frontpanel.update(now.hour(), now.minute(), now.second());
 
   // sleep until we need to update the clock again
   goSleep();
 }
 ```
+
+## ToDos:
+Please find here all the open tasks, which are not needed by nice to have
+
+* create an PCB for the driver
+* properply find a nicer light diffusion way than milk folio 

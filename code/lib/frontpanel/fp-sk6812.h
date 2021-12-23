@@ -45,8 +45,6 @@ public:
     uint8_t sync_row(uint8_t row);
     uint8_t sync_all();
 
-    void update(uint8_t hour, uint8_t minute, uint8_t second);
-
     void draw_pre_it();
     void draw_pre_is();
 
