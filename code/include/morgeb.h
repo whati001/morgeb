@@ -63,7 +63,7 @@ const fp_dimension_ LAYOUT_DIMENSION = {
 
 // define how many pixels are used to light up each character
 #define PIXEL_PER_CHAR 8
-#define PIXEL_DEF_POWER 50
+#define PIXEL_DEF_POWER 10
 
 #define RTC_WAKEUP_PIN 2
 #define RTC_SLEEP_TIME 5
