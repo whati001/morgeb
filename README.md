@@ -8,6 +8,10 @@ The goal of this project was to build a nice looking word clock, therefore we ha
 
 The clock is 900x900mm in size.
 
+Please find the POC video below:
+
+[![Blinking LEDs](https://img.youtube.com/vi/Z6e616QZ8-M/0.jpg)](http://www.youtube.com/watch?v=Z6e616QZ8-M "Blinking LEDs")
+
 **!!! Image will follow, still in production!!!**
 
 ## Costs
@@ -38,7 +42,7 @@ Please see below the physically frontpanel which is 900x900mm in size:
 Because the front was designed within the [svg](https://developer.mozilla.org/en-US/docs/Web/SVG) format and finally scaled to meet 900x900mm, we had no idea how big the characters will actually be. Furthermore, we have tried to keep each character within a bounded box, but some are misleaded, for example the `W`.
 
 To achieve a smooth lightning, have have placed four layers of smoothing folio along the character lines.
-![frontpanel_smoothingSize.jpg](assets/frontpanel_smoothingSize.jpg)
+![frontpanel_smoothingSize.jpg](./assets/frontpanel_smoothingSize-min.jpg)
 ![frontpanel_smoothing.jpg](./assets/frontpanel_smoothing-min.jpg)
 
 We have picked four layers, because it seems to be a good tradeoff between thickness and light diffusion.
@@ -68,10 +72,10 @@ After some time, we have drilled all holes successfully. Because we had no profe
 
 
 After drilling all the holes, we have smoothed the holes a little bit on both sides. By smoothing the edges, we receive a bigger hole, with reduces the change that some character edges are not well lighted. However, this should not be the case, due to measurement before.
-![holeglasGrindWood-min.jpg](assets/holeglasGrindWood-min.jpg)
+![holeglasGrindWood-min.jpg](./assets/holeglasGrindWood-min.jpg)
 
 Next, we need to cut out paths for the cabels. We used a 45mm driller and a angle grinder for this task. The result does not look very pretty, but nobody will see it. We simply drilled the first layer away, which was a nice indicated when we had to stop. However, this came with a small downside, small remining pieces tend to break apart easily, so please be careful. Please apologize on the next image, that there is a path on the top, this was an mistake :)
-![cabelDrillout.jpg](assets/cabelDrillout.jpg)
+![cabelDrillout.jpg](./assets/cabelDrillout.jpg)
 
 Next, we need to remove 2mm of wood at the top of the body. This allows us to intergrate the metal strip with mounted/welded nuts on it into the wood body. In addition, we have cutted a strip on the right and left side, which will act as mounting point. The idea is that the clock is holded by the metal strip, which is screwed with the frontpanel. Hence, there is no change the the wood will break. To remove the 2mm (metal thickness) from the wood plate, we have used again the angle grinder and a belt sander. 
 
