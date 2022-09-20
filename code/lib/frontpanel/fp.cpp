@@ -35,7 +35,7 @@ uint8_t FrontPanel_::init()
         fp_word_ *word = ((fp_word_ *)&layout_) + idx;
         uint8_t row_idx = word->start / dimension_.width;
         layout_rows_pin_map_[row_idx] = word->pin;
-        // #TODO: add some check if the pin value is greather than available digital pins of board
+        // #TODO: add some check if the pin value is greater than available digital pins of board
     }
 
     return 1;

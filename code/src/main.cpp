@@ -1,30 +1,43 @@
 #include <Arduino.h>
+#include <SimpleSerialShell.h>
 #include <avr/sleep.h>
+#include <RTClib.h>
 
 #include "morgeb.h"
-#include "RTClib.h"
-
 #include "fp-sk6812.h"
 
+RTC_DS3231 rtc;
 fp_color_ color = {0, 0, 0, PIXEL_DEF_POWER};
 SK6812FrontPanel_ frontpanel(LAYOUT_DIMENSION, LAYOUT, PIXEL_PER_CHAR, color);
 
-// RealTimeClock
-RTC_DS3231 rtc;
+/*
+ * Initiate the serial monitor of the arduino board
+ */
+int init_serial()
+{
+  Serial.begin(9600);
+  while (!Serial)
+  {
+  }
 
-uint8_t init_rtc()
+  return RET_SUCCESS;
+}
+
+/*
+ * Initiate the Real-Time-Clock (RTC)
+ * This function will clear and disable both alarm instances
+ */
+int init_rtc()
 {
   pinMode(RTC_WAKEUP_PIN, INPUT_PULLUP);
 
-  if (!rtc.begin())
+  if (false == rtc.begin())
   {
-    Serial.println("Failed to start RTC, please validated if all the conections are solid");
-    Serial.flush();
-    return 0;
+    return RET_ERROR_RTC;
   }
   if (rtc.lostPower())
   {
-    Serial.println("RTC lost power, lets set the time!");
+    Serial.println(F("RTC has lost power, let's reset the time to the compile time"));
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 
@@ -35,34 +48,146 @@ uint8_t init_rtc()
 
   rtc.writeSqwPinMode(DS3231_OFF);
 
-  return 1;
+  return RET_SUCCESS;
 }
 
-uint8_t init_frontpanel()
+/*
+ * Initiate Frontpanel library object
+ */
+int init_frontpanel()
 {
   frontpanel.init();
-  frontpanel.test_me();
-  return 1;
+  // frontpanel.test_me();
+
+  return RET_SUCCESS;
 }
 
+/*
+ * Handel error message properly. If
+ */
+void handle_error(int err)
+{
+  switch (err)
+  {
+  case RET_SUCCESS:
+    return; // avoid running into abort
+  case RET_ERROR_RTC:
+    Serial.println(F("RTC has lost power, let's reset the time to the compile time"));
+    break;
+  case RET_ERROR_FRONTPANEL:
+    Serial.println(F("Failed to initialize the Frontpanel, please verify previous raised errors"));
+    break;
+  case RET_ERROR_SERIAL_CONSOLE:
+    Serial.println(F("Failed to initialize the serial console, please verify previous raised errors"));
+    break;
+  default:
+    Serial.print(F("Something unexpected occurred during the initialization, please read the code and investigate where the err-code: "));
+    Serial.print(err);
+    Serial.println(F(" comes from in the setup function"));
+    break;
+  }
+
+  Serial.flush();
+  abort();
+}
+
+/*
+ * Initiate Morgeb application
+ * This includes initiating the RTC, Frontpanel and Serial monitor
+ */
+int init_application()
+{
+  int err = RET_SUCCESS;
+
+  err = init_serial();
+  handle_error(err);
+  Serial.println(F("Initiated Serial monitor properly"));
+
+  // TODO: remove before fly
+  // err = init_rtc();
+  handle_error(err);
+  Serial.println(F("Initiated Real-Time-Clock (RTC) properly"));
+
+  err = init_frontpanel();
+  handle_error(err);
+  Serial.println(F("Initiated Frontpanel properly"));
+
+  return err;
+}
+
+void update_var_help()
+{
+  Serial.println(F("Incorrect amount of parameters passed to updateVar command."));
+  Serial.println(F("Please pass the variable name and value, as shown below"));
+  Serial.println(F("Available variables are: power(v), color(r,g,b)"));
+  Serial.println(F("  > updateVar power 100"));
+  Serial.println(F("  > updateVar color 100,100,100"));
+}
+
+int update_var(int argc, char **argv)
+{
+  Serial.println(F("## Update Morgeb-Clock variable"));
+  Serial.println(argc);
+  if (argc != 3)
+  {
+    update_var_help();
+  }
+
+  return RET_SUCCESS;
+}
+
+int print_vars(int argc, char **argv)
+{
+  Serial.println(F("## Print Morgeb-Clock variables"));
+
+  return RET_SUCCESS;
+}
+
+/*
+ * Handle user interaction, which allows to update
+ * application related information such as color, brightness, etc.
+ */
+int handle_user_interaction()
+{
+  int err = RET_SUCCESS;
+  uint32_t timeout = 0;
+
+  Serial.println(F("User configuration phase started"));
+  Serial.print(F("If no Serial input is read for "));
+  Serial.print(USER_CONFIG_SEC_TIMEOUT);
+  Serial.println(" seconds, the clock will start");
+
+  shell.attach(Serial);
+  shell.addCommand(F("updateVar <update variable value>..."), update_var);
+  shell.addCommand(F("printVars <print all variable values>..."), print_vars);
+
+  while (timeout < USER_CONFIG_MS_TIMEOUT)
+  {
+    if (shell.executeIfInput())
+    {
+      timeout = 0;
+    }
+    delay(USER_CONFIG_POLL_MS_TIMEOUT);
+    timeout += USER_CONFIG_POLL_MS_TIMEOUT;
+  }
+
+  return RET_SUCCESS;
+}
+
+/*
+ * Setup all cock components and provide
+ * the user to configure the clock accordantly
+ */
 void setup()
 {
-  Serial.begin(9600);
-  delay(100);
-  Serial.println("Start loading Morgeb clock");
+  int err = init_application();
+  handle_error(err);
+  Serial.println(F("Initiated Morgeb-Clock components properly"));
 
-  if (!init_rtc())
-  {
-    Serial.println("Failed to load RTC instance");
-    abort();
-  }
-  if (!init_frontpanel())
-  {
-    Serial.println("Failed to load FrontPanel instance");
-    abort();
-  }
-
-  Serial.println("Initialized Morgeb clock properly");
+  err = handle_user_interaction();
+  handle_error(err);
+  Serial.println(F("Setup phase done, clock will start showing the time"));
+  Serial.flush();
 }
 
 void wakeupISR()
@@ -97,15 +222,23 @@ void goSleep()
   Serial.println("Woke up, update front panel"); // Print message to show we're back
 }
 
+/*
+ * Update the time every five minutes
+ * Let the microcontroller sleep with in the Power Down mode to save energy
+ */
 void loop()
 {
+  Serial.println("LOOP");
+  delay(1000);
+  return;
+
   DateTime now = rtc.now();
   // compute next wakeup, which is a multiple of 5 and has 0 seconds
   // hence, we substract the current seconds and compute the next smooth minute value
-  DateTime nextWakeup = now -
-                        TimeSpan(0, 0, now.minute(), now.second()) +
-                        TimeSpan(0, 0, ((now.minute() + RTC_SLEEP_TIME) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
-  rtc.setAlarm1(nextWakeup, DS3231_A1_Minute);
+  DateTime next_wakeup = now -
+                         TimeSpan(0, 0, now.minute(), now.second()) +
+                         TimeSpan(0, 0, ((now.minute() + RTC_SLEEP_TIME) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
+  rtc.setAlarm1(next_wakeup, DS3231_A1_Minute);
 
   // #TODO: find a better logic
   DateTime now_five_base = now -
@@ -113,11 +246,11 @@ void loop()
                            TimeSpan(0, 0, ((now.minute()) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
 
   Serial.print("Set next wakeup to:");
-  Serial.print(nextWakeup.hour());
+  Serial.print(next_wakeup.hour());
   Serial.print(":");
-  Serial.print(nextWakeup.minute());
+  Serial.print(next_wakeup.minute());
   Serial.print(".");
-  Serial.println(nextWakeup.second());
+  Serial.println(next_wakeup.second());
 
   frontpanel.update(now_five_base.hour(), now_five_base.minute(), now_five_base.second());
 
