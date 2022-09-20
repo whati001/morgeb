@@ -137,6 +137,9 @@ int init_application()
   return err;
 }
 
+/*
+ * Helper function to print help information for updateVar command
+ */
 void update_var_help()
 {
   Serial.println(F("Incorrect amount of parameters passed to updateVar command."));
@@ -255,6 +258,9 @@ void setup()
   Serial.flush();
 }
 
+/*
+ * ISR called when the RTC injects an external interrupt
+ */
 void wakeupISR()
 {
   Serial.println("Some interrupt occrued");
@@ -262,6 +268,10 @@ void wakeupISR()
   detachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN));
 }
 
+/*
+ * Send the mic to POWER DOWN mode to save energy
+ * He will be woken up by external interrupts, triggered by the RTC on D2 (nano)
+ */
 void goSleep()
 {
   sleep_enable();
@@ -269,11 +279,6 @@ void goSleep()
 
   noInterrupts();
   attachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN), wakeupISR, LOW);
-
-  Serial.print("Sleep for ");
-  Serial.print(RTC_SLEEP_TIME);
-  Serial.println(" minute");
-  Serial.flush();
 
   interrupts();
   sleep_cpu();
@@ -284,8 +289,6 @@ void goSleep()
 
   rtc.disableAlarm(1);
   rtc.clearAlarm(1);
-
-  Serial.println("Woke up, update front panel"); // Print message to show we're back
 }
 
 /*
@@ -294,13 +297,9 @@ void goSleep()
  */
 void loop()
 {
-
-  print_time(rtc.now());
-  delay(5000);
-
-  DateTime now = rtc.now();
   // compute next wakeup, which is a multiple of 5 and has 0 seconds
   // hence, we substract the current seconds and compute the next smooth minute value
+  DateTime now = rtc.now();
   DateTime next_wakeup = now -
                          TimeSpan(0, 0, now.minute(), now.second()) +
                          TimeSpan(0, 0, ((now.minute() + RTC_SLEEP_TIME) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
@@ -319,6 +318,5 @@ void loop()
 
   frontpanel.update(now_five_base.hour(), now_five_base.minute(), now_five_base.second());
 
-  // sleep until we need to update the clock again
   goSleep();
 }

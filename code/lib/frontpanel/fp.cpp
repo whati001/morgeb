@@ -152,7 +152,7 @@ void FrontPanel_::update(uint8_t hour, uint8_t minute, uint8_t second)
     {
         draw_type_to();
         // next hour needs to get displayed
-        hour = (hour++ % 24);
+        hour = ((hour + 1) % 24);
     }
     else
     {
