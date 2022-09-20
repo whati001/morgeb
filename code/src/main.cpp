@@ -144,8 +144,9 @@ void update_var_help()
 {
   Serial.println(F("Incorrect amount of parameters passed to updateVar command."));
   Serial.println(F("Please pass the variable name and value, as shown below"));
-  Serial.println(F("Available variables are: color(g r b w)"));
+  Serial.println(F("Available variables are: color(g r b w), time hh mm ss"));
   Serial.println(F("  > updateVar color 10 20 30 100"));
+  Serial.println(F("  > updateTime time 14 45 48"));
 }
 
 /*
@@ -183,6 +184,26 @@ int update_var(int argc, char **argv)
     Serial.print("Successfully updated color to: ");
     SK6812FrontPanel_::print_color(color);
   }
+  else if (strncmp(varname, "time", strlen("time")) == 0)
+  {
+    if (argc != 5)
+    {
+      update_var_help();
+      return RET_ERROR_COMMAND;
+    }
+
+    // TODO: this is not save, we neither check for overflows during the conversion nor during the cast
+    uint8_t h = atoi(argv[2]);
+    uint8_t m = atoi(argv[3]);
+    uint8_t s = atoi(argv[4]);
+
+    // year, month, day does not matter, so let's use dummy value
+    DateTime time = DateTime(2022, 01, 01, h, m, s);
+    rtc.adjust(time);
+
+    Serial.print("Successfully updated time to: ");
+    print_time(time);
+  }
   else
   {
     update_var_help();
@@ -201,6 +222,8 @@ int print_vars(int argc, char **argv)
   fp_color_ color = read_stored_color();
   Serial.print(F("  * "));
   SK6812FrontPanel_::print_color(color);
+  Serial.print(F("  * "));
+  print_time(rtc.now());
 
   return RET_SUCCESS;
 }
@@ -247,13 +270,15 @@ int handle_user_interaction()
  */
 void setup()
 {
-  int err = handle_user_interaction();
+  int err = init_application();
+  handle_error(err);
+  Serial.println(F("Initiated Morgeb-Clock components properly"));
+
+  err = handle_user_interaction();
   handle_error(err);
   Serial.println(F("Setup phase done, clock will start showing the time"));
 
   err = init_application();
-  handle_error(err);
-  Serial.println(F("Initiated Morgeb-Clock components properly"));
 
   Serial.flush();
 }
@@ -281,6 +306,7 @@ void goSleep()
   attachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN), wakeupISR, LOW);
 
   interrupts();
+  Serial.flush();
   sleep_cpu();
 
   //---------------------------------------------------------------------------
