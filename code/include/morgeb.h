@@ -74,8 +74,15 @@ const fp_dimension_ LAYOUT_DIMENSION = {
 #define USER_CONFIG_MS_TIMEOUT (USER_CONFIG_SEC_TIMEOUT * 1000)
 #define USER_CONFIG_POLL_MS_TIMEOUT 100
 
+// define EEPROM address to store variables values
+#define EEPROM_ADDR_COLOR_G 0x01
+#define EEPROM_ADDR_COLOR_R 0x02
+#define EEPROM_ADDR_COLOR_B 0x03
+#define EEPROM_ADDR_COLOR_W 0x04
+
 // define some error constants
 #define RET_SUCCESS 0
 #define RET_ERROR_RTC -1
 #define RET_ERROR_FRONTPANEL -2
 #define RET_ERROR_SERIAL_CONSOLE -3
+#define RET_ERROR_COMMAND -4

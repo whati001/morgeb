@@ -2,6 +2,7 @@
 #include <SimpleSerialShell.h>
 #include <avr/sleep.h>
 #include <RTClib.h>
+#include <EEPROM.h>
 
 #include "morgeb.h"
 #include "fp-sk6812.h"
@@ -11,16 +12,26 @@ fp_color_ color = {0, 0, 0, PIXEL_DEF_POWER};
 SK6812FrontPanel_ frontpanel(LAYOUT_DIMENSION, LAYOUT, PIXEL_PER_CHAR, color);
 
 /*
- * Initiate the serial monitor of the arduino board
+ * Small helper function to read persistent color value from EEPROM
  */
-int init_serial()
+fp_color_ read_stored_color()
 {
-  Serial.begin(9600);
-  while (!Serial)
-  {
-  }
+  uint8_t g = EEPROM.read(EEPROM_ADDR_COLOR_G);
+  uint8_t b = EEPROM.read(EEPROM_ADDR_COLOR_B);
+  uint8_t r = EEPROM.read(EEPROM_ADDR_COLOR_R);
+  uint8_t w = EEPROM.read(EEPROM_ADDR_COLOR_W);
+  return {g, r, b, w};
+}
 
-  return RET_SUCCESS;
+/*
+ * Small helper function to store color value persistent on EEPROM
+ */
+void store_color(fp_color_ color)
+{
+  EEPROM.update(EEPROM_ADDR_COLOR_G, color.g);
+  EEPROM.update(EEPROM_ADDR_COLOR_B, color.b);
+  EEPROM.update(EEPROM_ADDR_COLOR_R, color.r);
+  EEPROM.update(EEPROM_ADDR_COLOR_W, color.w);
 }
 
 /*
@@ -56,7 +67,12 @@ int init_rtc()
  */
 int init_frontpanel()
 {
+  fp_color_ color = read_stored_color();
+  Serial.print(F("Set frontpanel to "));
+  SK6812FrontPanel_::print_color(color);
+
   frontpanel.init();
+  frontpanel.update_color(color);
   // frontpanel.test_me();
 
   return RET_SUCCESS;
@@ -99,10 +115,6 @@ int init_application()
 {
   int err = RET_SUCCESS;
 
-  err = init_serial();
-  handle_error(err);
-  Serial.println(F("Initiated Serial monitor properly"));
-
   // TODO: remove before fly
   // err = init_rtc();
   handle_error(err);
@@ -119,18 +131,46 @@ void update_var_help()
 {
   Serial.println(F("Incorrect amount of parameters passed to updateVar command."));
   Serial.println(F("Please pass the variable name and value, as shown below"));
-  Serial.println(F("Available variables are: power(v), color(r,g,b)"));
-  Serial.println(F("  > updateVar power 100"));
-  Serial.println(F("  > updateVar color 100,100,100"));
+  Serial.println(F("Available variables are: color(g r b w)"));
+  Serial.println(F("  > updateVar color 10 20 30 100"));
 }
 
 int update_var(int argc, char **argv)
 {
   Serial.println(F("## Update Morgeb-Clock variable"));
   Serial.println(argc);
-  if (argc != 3)
+  if (argc < 2)
   {
     update_var_help();
+    return RET_ERROR_COMMAND;
+  }
+
+  char *varname = argv[1];
+  if (strncmp(varname, "color", strlen("color")) == 0)
+  {
+    if (argc != 6)
+    {
+      update_var_help();
+      return RET_ERROR_COMMAND;
+    }
+
+    // TODO: this is not save, we neither check for overflows during the conversion nor during the cast
+    uint8_t g = atoi(argv[2]);
+    uint8_t r = atoi(argv[3]);
+    uint8_t b = atoi(argv[4]);
+    uint8_t w = atoi(argv[5]);
+
+    fp_color_ color = {g, r, b, w};
+    store_color(color);
+
+    frontpanel.update_color(color);
+    Serial.print("Successfully updated color to: ");
+    SK6812FrontPanel_::print_color(color);
+  }
+  else
+  {
+    update_var_help();
+    return RET_ERROR_COMMAND;
   }
 
   return RET_SUCCESS;
@@ -139,6 +179,9 @@ int update_var(int argc, char **argv)
 int print_vars(int argc, char **argv)
 {
   Serial.println(F("## Print Morgeb-Clock variables"));
+  fp_color_ color = read_stored_color();
+  Serial.print(F("  * "));
+  SK6812FrontPanel_::print_color(color);
 
   return RET_SUCCESS;
 }
@@ -149,10 +192,13 @@ int print_vars(int argc, char **argv)
  */
 int handle_user_interaction()
 {
-  int err = RET_SUCCESS;
   uint32_t timeout = 0;
 
-  Serial.println(F("User configuration phase started"));
+  Serial.begin(9600);
+  while (!Serial)
+    ;
+  Serial.println(F("Welcome to the Serial output of the Morgeb-Clock"));
+  Serial.println(F("User configuration phase started, this allows you to persistently change values of the clock"));
   Serial.print(F("If no Serial input is read for "));
   Serial.print(USER_CONFIG_SEC_TIMEOUT);
   Serial.println(" seconds, the clock will start");
@@ -160,6 +206,8 @@ int handle_user_interaction()
   shell.attach(Serial);
   shell.addCommand(F("updateVar <update variable value>..."), update_var);
   shell.addCommand(F("printVars <print all variable values>..."), print_vars);
+  shell.printHelp(0, NULL);
+  Serial.print(F("> "));
 
   while (timeout < USER_CONFIG_MS_TIMEOUT)
   {
@@ -180,13 +228,14 @@ int handle_user_interaction()
  */
 void setup()
 {
-  int err = init_application();
+  int err = handle_user_interaction();
+  handle_error(err);
+  Serial.println(F("Setup phase done, clock will start showing the time"));
+
+  err = init_application();
   handle_error(err);
   Serial.println(F("Initiated Morgeb-Clock components properly"));
 
-  err = handle_user_interaction();
-  handle_error(err);
-  Serial.println(F("Setup phase done, clock will start showing the time"));
   Serial.flush();
 }
 

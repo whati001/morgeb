@@ -42,6 +42,7 @@ public:
     SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char);
     SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char, fp_color_ color);
 
+    void update_color(fp_color_ color);
     uint8_t sync_row(uint8_t row);
     uint8_t sync_all();
 
@@ -75,6 +76,19 @@ public:
 
     void show();
     void clear();
+
+    static void print_color(fp_color_ color)
+    {
+        Serial.print("Color {g: ");
+        Serial.print(color.g);
+        Serial.print(", r: ");
+        Serial.print(color.r);
+        Serial.print(", b: ");
+        Serial.print(color.b);
+        Serial.print(", w: ");
+        Serial.print(color.w);
+        Serial.println("}");
+    }
 };
 
 #endif
