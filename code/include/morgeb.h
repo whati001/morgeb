@@ -26,12 +26,12 @@ const fp_layout_ LAYOUT = {
     {3, 2, 3}, // PRE IS
 
     // minutes words
-    {28, 4, 5}, // MIN FIVE
-    {38, 3, 6}, // MIN TEN
-    {13, 7, 4}, // MIN QUARTER
-    {22, 6, 5}, // MIN TWENTY
+    {28, 4, 5},  // MIN FIVE
+    {38, 3, 6},  // MIN TEN
+    {13, 7, 4},  // MIN QUARTER
+    {22, 6, 5},  // MIN TWENTY
     {22, 10, 5}, // MIN TWENTYFIVE
-    {33, 4, 6}, // MIN HALF
+    {33, 4, 6},  // MIN HALF
 
     // type words
     {44, 4, 7}, // TYPE PAST
@@ -45,10 +45,10 @@ const fp_layout_ LAYOUT = {
     {70, 4, 9},  // HOUR FIVE
     {58, 3, 8},  // HOUR SIX
     {88, 5, 11}, // HOUR SEVEN
-    {77, 5, 10},  // HOUR EIGHT
+    {77, 5, 10}, // HOUR EIGHT
     {51, 4, 7},  // HOUR NINE
     {99, 3, 12}, // HOUR TEN
-    {82, 6, 10},  // HOUR ELEVEN
+    {82, 6, 10}, // HOUR ELEVEN
     {93, 6, 11}, // HOUR TWELVE
 
     // full clock word
@@ -65,5 +65,24 @@ const fp_dimension_ LAYOUT_DIMENSION = {
 #define PIXEL_PER_CHAR 8
 #define PIXEL_DEF_POWER 10
 
+// define the wakeup pin and sleep time for the RTC
 #define RTC_WAKEUP_PIN 2
 #define RTC_SLEEP_TIME 5
+
+// define the user config timeout
+#define USER_CONFIG_SEC_TIMEOUT 10
+#define USER_CONFIG_MS_TIMEOUT (USER_CONFIG_SEC_TIMEOUT * 1000)
+#define USER_CONFIG_POLL_MS_TIMEOUT 100
+
+// define EEPROM address to store variables values
+#define EEPROM_ADDR_COLOR_G 0x01
+#define EEPROM_ADDR_COLOR_R 0x02
+#define EEPROM_ADDR_COLOR_B 0x03
+#define EEPROM_ADDR_COLOR_W 0x04
+
+// define some error constants
+#define RET_SUCCESS 0
+#define RET_ERROR_RTC -1
+#define RET_ERROR_FRONTPANEL -2
+#define RET_ERROR_SERIAL_CONSOLE -3
+#define RET_ERROR_COMMAND -4

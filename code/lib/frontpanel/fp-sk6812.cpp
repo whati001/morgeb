@@ -5,6 +5,11 @@ SK6812FrontPanel_::SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout)
 SK6812FrontPanel_::SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char) : SK6812FrontPanel_(dimension, layout, leds_per_char, FP_DEF_ON_COLOR){};
 SK6812FrontPanel_::SK6812FrontPanel_(fp_dimension_ dimension, fp_layout_ layout, uint8_t leds_per_char, fp_color_ color) : FrontPanel_(dimension, layout, leds_per_char), on_color_(color), off_color_(FP_DEF_OFF_COLOR){};
 
+void SK6812FrontPanel_::update_color(fp_color_ color)
+{
+    on_color_ = color;
+}
+
 void SK6812FrontPanel_::draw_pre_it()
 {
     draw_word(&layout_.PRE_IT);
