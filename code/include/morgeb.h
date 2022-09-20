@@ -67,7 +67,7 @@ const fp_dimension_ LAYOUT_DIMENSION = {
 
 // define the wakeup pin and sleep time for the RTC
 #define RTC_WAKEUP_PIN 2
-#define RTC_SLEEP_TIME 5
+#define RTC_SLEEP_TIME 1 //5
 
 // define the user config timeout
 #define USER_CONFIG_SEC_TIMEOUT 10

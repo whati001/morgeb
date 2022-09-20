@@ -8,8 +8,7 @@
 #include "fp-sk6812.h"
 
 RTC_DS3231 rtc;
-fp_color_ color = {0, 0, 0, PIXEL_DEF_POWER};
-SK6812FrontPanel_ frontpanel(LAYOUT_DIMENSION, LAYOUT, PIXEL_PER_CHAR, color);
+SK6812FrontPanel_ frontpanel(LAYOUT_DIMENSION, LAYOUT, PIXEL_PER_CHAR);
 
 /*
  * Small helper function to read persistent color value from EEPROM
@@ -34,6 +33,18 @@ void store_color(fp_color_ color)
   EEPROM.update(EEPROM_ADDR_COLOR_W, color.w);
 }
 
+/*
+ * Small helper function to print time nicely
+ */
+void print_time(DateTime time)
+{
+  Serial.print("Time: ");
+  Serial.print(time.hour());
+  Serial.print(":");
+  Serial.print(time.minute());
+  Serial.print(".");
+  Serial.println(time.second());
+}
 /*
  * Initiate the Real-Time-Clock (RTC)
  * This function will clear and disable both alarm instances
@@ -115,8 +126,7 @@ int init_application()
 {
   int err = RET_SUCCESS;
 
-  // TODO: remove before fly
-  // err = init_rtc();
+  err = init_rtc();
   handle_error(err);
   Serial.println(F("Initiated Real-Time-Clock (RTC) properly"));
 
@@ -135,6 +145,9 @@ void update_var_help()
   Serial.println(F("  > updateVar color 10 20 30 100"));
 }
 
+/*
+ * Serial console command to update variables
+ */
 int update_var(int argc, char **argv)
 {
   Serial.println(F("## Update Morgeb-Clock variable"));
@@ -176,6 +189,9 @@ int update_var(int argc, char **argv)
   return RET_SUCCESS;
 }
 
+/*
+ * Serial console command to print all variables
+ */
 int print_vars(int argc, char **argv)
 {
   Serial.println(F("## Print Morgeb-Clock variables"));
@@ -187,8 +203,8 @@ int print_vars(int argc, char **argv)
 }
 
 /*
- * Handle user interaction, which allows to update
- * application related information such as color, brightness, etc.
+ * Handler to allow the user to adjust clock specific variables
+ * like the color and so forth
  */
 int handle_user_interaction()
 {
@@ -241,6 +257,7 @@ void setup()
 
 void wakeupISR()
 {
+  Serial.println("Some interrupt occrued");
   sleep_disable();
   detachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN));
 }
@@ -277,9 +294,9 @@ void goSleep()
  */
 void loop()
 {
-  Serial.println("LOOP");
-  delay(1000);
-  return;
+
+  print_time(rtc.now());
+  delay(5000);
 
   DateTime now = rtc.now();
   // compute next wakeup, which is a multiple of 5 and has 0 seconds
@@ -287,19 +304,18 @@ void loop()
   DateTime next_wakeup = now -
                          TimeSpan(0, 0, now.minute(), now.second()) +
                          TimeSpan(0, 0, ((now.minute() + RTC_SLEEP_TIME) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
-  rtc.setAlarm1(next_wakeup, DS3231_A1_Minute);
+  if (false == rtc.setAlarm1(next_wakeup, DS3231_A1_Minute))
+  {
+    Serial.println("Failed to set wakeup alarm, microcontroller maybe starve now");
+  }
+
+  Serial.print(F("Microcontroller will sleep until "));
+  print_time(next_wakeup);
 
   // #TODO: find a better logic
   DateTime now_five_base = now -
                            TimeSpan(0, 0, now.minute(), now.second()) +
                            TimeSpan(0, 0, ((now.minute()) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
-
-  Serial.print("Set next wakeup to:");
-  Serial.print(next_wakeup.hour());
-  Serial.print(":");
-  Serial.print(next_wakeup.minute());
-  Serial.print(".");
-  Serial.println(next_wakeup.second());
 
   frontpanel.update(now_five_base.hour(), now_five_base.minute(), now_five_base.second());
 
