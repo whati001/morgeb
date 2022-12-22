@@ -84,7 +84,7 @@ int init_frontpanel()
 
   frontpanel.init();
   frontpanel.update_color(color);
-  // frontpanel.test_me();
+  frontpanel.test_me();
 
   return RET_SUCCESS;
 }
@@ -146,7 +146,7 @@ void update_var_help()
   Serial.println(F("Please pass the variable name and value, as shown below"));
   Serial.println(F("Available variables are: color(g r b w), time hh mm ss"));
   Serial.println(F("  > updateVar color 10 20 30 100"));
-  Serial.println(F("  > updateTime time 14 45 48"));
+  Serial.println(F("  > updateVar time 14 45 48"));
 }
 
 /*
@@ -277,8 +277,6 @@ void setup()
   err = handle_user_interaction();
   handle_error(err);
   Serial.println(F("Setup phase done, clock will start showing the time"));
-
-  err = init_application();
 
   Serial.flush();
 }

@@ -90,6 +90,8 @@ void FrontPanel_::test_me()
     for (uint8_t idx = 0; idx < FP_LAYOUT_WORD_COUNT; idx++)
     {
         fp_word_ *word = ((fp_word_ *)&layout_) + idx;
+        Serial.print("Draw: ");
+        Serial.println(idx);
         clear_all();
         draw_word(word);
         sync_all();
