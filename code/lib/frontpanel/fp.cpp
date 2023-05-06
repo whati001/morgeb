@@ -115,6 +115,7 @@ void FrontPanel_::update(uint8_t hour, uint8_t minute, uint8_t second)
     draw_pre_is();
 
     // check if we are past
+    uint8_t need_past_to = 1;
     uint8_t is_past = (minute > 30) ? 0 : 1;
 
     // draw minutes
@@ -145,21 +146,25 @@ void FrontPanel_::update(uint8_t hour, uint8_t minute, uint8_t second)
         break;
     case 0:
         draw_full_oclock();
+        need_past_to = 0;
         break;
     default:
         break;
     }
 
-    if (!is_past)
+    if (need_past_to)
     {
-        draw_type_to();
-        // next hour needs to get displayed
-        hour = ((hour + 1) % 24);
-    }
-    else
-    {
-        draw_type_past();
-        // hour will be fine
+        if (!is_past)
+        {
+            draw_type_to();
+            // next hour needs to get displayed
+            hour = ((hour + 1) % 24);
+        }
+        else
+        {
+            draw_type_past();
+            // hour will be fine
+        }
     }
 
     // draw hour
@@ -209,6 +214,7 @@ void FrontPanel_::update(uint8_t hour, uint8_t minute, uint8_t second)
     case 23:
         draw_hour_eleven();
         break;
+    case 0:
     case 12:
     case 24:
         draw_hour_twelve();
@@ -216,7 +222,7 @@ void FrontPanel_::update(uint8_t hour, uint8_t minute, uint8_t second)
     default:
         break;
     }
-    
+
     sync_all();
 
     return;

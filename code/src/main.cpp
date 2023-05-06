@@ -7,6 +7,7 @@
 #include "morgeb.h"
 #include "fp-sk6812.h"
 
+uint8_t cshell_running;
 RTC_DS3231 rtc;
 SK6812FrontPanel_ frontpanel(LAYOUT_DIMENSION, LAYOUT, PIXEL_PER_CHAR);
 
@@ -84,7 +85,7 @@ int init_frontpanel()
 
   frontpanel.init();
   frontpanel.update_color(color);
-  frontpanel.test_me();
+  // frontpanel.test_me();
 
   return RET_SUCCESS;
 }
@@ -125,6 +126,9 @@ void handle_error(int err)
 int init_application()
 {
   int err = RET_SUCCESS;
+  Serial.begin(9600);
+  while (!Serial)
+    ;
 
   err = init_rtc();
   handle_error(err);
@@ -228,37 +232,68 @@ int print_vars(int argc, char **argv)
   return RET_SUCCESS;
 }
 
+int exit(int argc, char **argv)
+{
+  Serial.println(F("## Exit configuration shell"));
+  cshell_running = 0;
+  return RET_SUCCESS;
+}
+
+void flush_serial_input()
+{
+  while (Serial.available() > 0)
+  {
+    Serial.read();
+  }
+}
+
+int config_shell_requests()
+{
+  uint32_t timeout = 0;
+  while (timeout < USER_CONFIG_MS_TIMEOUT)
+  {
+    if (Serial.available())
+    {
+      if (' ' == Serial.read())
+      {
+        return 1;
+      }
+      flush_serial_input();
+    }
+    delay(USER_CONFIG_POLL_MS_TIMEOUT);
+    timeout += USER_CONFIG_POLL_MS_TIMEOUT;
+  }
+  return 0;
+}
+
 /*
  * Handler to allow the user to adjust clock specific variables
  * like the color and so forth
  */
 int handle_user_interaction()
 {
-  uint32_t timeout = 0;
-
-  Serial.begin(9600);
-  while (!Serial)
-    ;
   Serial.println(F("Welcome to the Serial output of the Morgeb-Clock"));
   Serial.println(F("User configuration phase started, this allows you to persistently change values of the clock"));
-  Serial.print(F("If no Serial input is read for "));
+  Serial.print(F("If no SPACE key is read for "));
   Serial.print(USER_CONFIG_SEC_TIMEOUT);
-  Serial.println(" seconds, the clock will start");
+  Serial.println(F(" seconds, the clock will start"));
+  Serial.println(F("Please press SPACE to start configuration shell"));
+  Serial.flush();
 
-  shell.attach(Serial);
-  shell.addCommand(F("updateVar <update variable value>..."), update_var);
-  shell.addCommand(F("printVars <print all variable values>..."), print_vars);
-  shell.printHelp(0, NULL);
-  Serial.print(F("> "));
-
-  while (timeout < USER_CONFIG_MS_TIMEOUT)
+  cshell_running = config_shell_requests();
+  if (cshell_running)
   {
-    if (shell.executeIfInput())
+    shell.attach(Serial);
+    shell.addCommand(F("updateVar <update variable value>..."), update_var);
+    shell.addCommand(F("printVars <print all variable values>..."), print_vars);
+    shell.addCommand(F("exit <exit configuration shell>..."), exit);
+    shell.printHelp(0, NULL);
+    Serial.print(F("> "));
+
+    while (1 == cshell_running)
     {
-      timeout = 0;
+      shell.executeIfInput();
     }
-    delay(USER_CONFIG_POLL_MS_TIMEOUT);
-    timeout += USER_CONFIG_POLL_MS_TIMEOUT;
   }
 
   return RET_SUCCESS;
