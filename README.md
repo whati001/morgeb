@@ -1,110 +1,109 @@
-# morgeb
+# Morgeb - Unauthorized word-clock replica
 
-Morgeb, the friendly clock for eachdays morning.
-This repository holds all the information to build a nice looking word clock on your own, without any high expensive equipment (beside the frontpanel).
-Currenlty, the repository only includes file to build a english version, however, it should not be difficult to port it to different languages like german.
+**Morgeb** - the friendly word clock for every day's morning. This project should be a guideline for building your customized word clock. It contains the code and the manufacturing steps for my own version of the word clock, as shown below. The clock is 900x900 mm in size and weighs approximately 24 kg. The front is entirely rusted and looks terrific.
 
-The goal of this project was to build a nice looking word clock, therefore we have started with the frontpanel and developed everything else based on it. Thus, we were not able to simply use a led strip for lightning.
+![morgeb_front](./assets/morgeb_final.jpeg)
+![morgeb_side](./assets/morgeb_final_side.jpeg)
 
-The clock is 900x900mm in size.
 
-Please find the POC video below:
+The primary goal of this project was to design and manufacture a nice-looking word clock without the need for expensive equipment and with common tools. Additionally, it should be giant and straightforward to build. The current repository version only covers the English layout. However, porting to other languages should be straightforward and only requires reordering the characters and redefining their location in the C-Header file.
 
-[![Blinking LEDs](https://img.youtube.com/vi/Z6e616QZ8-M/0.jpg)](http://www.youtube.com/watch?v=Z6e616QZ8-M "Blinking LEDs")
 
-**!!! Image will follow, still in production!!!**
-
-## Costs
+# Costs
 | Name       | Price    |
 | ---------- | -------- |
 | Frontpanel | 55 Euro  |
 | Wood       | 70 Euro  |
 | Backplate  | 20 Euro  |
-| Leds       | 150 Euro |
-| Folio      | 10 Euro  |
+| LEDs       | 150 Euro |
+| Extra stuff| 10 Euro  |
 | Mic        | 25 Euro  |
 | ---------- | -------- |
 | Total      | 330 Euro |
 
+The clock cost me around 330 euros, which is not that cheap. But as we can see in the cost table, the LEDs cost the most, and this position can be easily reduced. As a spoiler, I have used eight controllable LEDs (NeoPixels) per character, which results in 880 LEDs in total. This amount is ridiculously high, and using half or just a quarter of them should be enough to achieve the same result.
 
-## Frontpanel
-We have decided to go with a laser cutted metal panel, because it looks way better than some acrylglas front.
-Please find all the relevant files within the [frontpanel](./frontpanel) directory.
+# Manufacturing
+Let's get started to step over each manufacturing step. The clock consists of the following four main parts, which we will now introduced:
+* Front panel
+* Wood body
+* Backside
+* Controller
 
-It includes the [svg](https://developer.mozilla.org/en-US/docs/Web/SVG) source, as well as the [dxf](https://www.autodesk.com/products/autocad/overview) file.
-Because [Autocard](https://www.autodesk.com/products/autocad/overview) is very expensive, we have created the front panel layout via [Inkscape](https://inkscape.org/) and finally converted the [svg](https://developer.mozilla.org/en-US/docs/Web/SVG) to [dxf](https://www.autodesk.com/products/autocad/overview).
-
-Because the metal plate weighs around 12kg, we have decided to place screws throw the minutes holes, safety first. The two upper screws will be mounted to nutes, which are welded to another small piece of metal to guarantee safety. The lower two ones are just there for symmetry. 
-
-Please see below the physically frontpanel which is 900x900mm in size:
+## Front Panel
+We have decided to make the front out of metal and let it rust. Therefore, we have designed the layout via the open source tool [Inkscape](https://inkscape.org/) and exported a [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG) source, as well as the [DXF](https://www.autodesk.com/products/autocad/overview) file, stored inside the `frontpanel` directory. A friend of mine has access to a laser cutter machine, which accepts the DXF file. The final 900x900 mm metal plane is shown in the image below:
 ![frontpanel](./assets/frontpanel-min.jpg)
 
-Because the front was designed within the [svg](https://developer.mozilla.org/en-US/docs/Web/SVG) format and finally scaled to meet 900x900mm, we had no idea how big the characters will actually be. Furthermore, we have tried to keep each character within a bounded box, but some are misleaded, for example the `W`.
+Because the plate weights approximately 12 kg, we placed four screws through the holds of the edges to secure the plate, instead of showing the minutes. If your clue, which mounts the panel to the later explained wood body, is strong enough, these screws should not be needed. I have used the [FixAll](https://www.soudal.de/diy/produkte/fix-all/fix-all/fix-all-high-tack#v12190) clue, which is for sure strong enough, but for safety reasons, the screws are there, and I think they give the clock a real badass touch. 
 
-To achieve a smooth lightning, have have placed four layers of smoothing folio along the character lines.
-![frontpanel_smoothingSize.jpg](./assets/frontpanel_smoothingSize-min.jpg)
-![frontpanel_smoothing.jpg](./assets/frontpanel_smoothing-min.jpg)
+After laser cutting the metal, there is little to do. Rusting takes time; if you prefer, you can try one of these fast rust products. They have not worked for me, so I have waited one year until it was done. However, I have removed the cinder via a grinder before letting it rust.
 
-We have picked four layers, because it seems to be a good tradeoff between thickness and light diffusion.
+![frontpanel](./assets/frontpanel_cinder.jpeg)
 
-## Woodbody
-Because your project is based on the frontpanel, we had to wait until this part is fabricated. After receiving the front, we copied all the characters to your woodbody. Use a pen, place the wood under the front and start drawing.
+Finally, I have clued strips of simple white bakery paper over the characters to defuse the light nicely. Unfortunately, the stips have not held as good as hoped. 
 
-![woodBodyCopy](./assets/woodbodyCopy-min.jpg)
+![frontpanel](./assets/frontpanel-defuse.jpeg)
 
-The woodbody is a little bit smaller than the frontpanel, the idea was to make the body invisible by giving the metal a little advance.
-It's around 888x888mm in size. Further, we have picked a 27mm thick three layer wood plate. There was no specific reason for it, it was just available to us. But the decision was quite lucky, we need some space between the leds and the frontpanel to achieve a nice lighting and to fix the panel properly, a nut will be mounted into the body, which would be also complicated if the body would be to thin.
+Therefore, I used some hot glue after mounting the wood body to fix the bakery strips one more time.
+I have used three layers of bakery paper to gain a lovely diffusion.
 
-Because we had no idea, how big the characters will be, your first task was to find a suiteable hole size. After some measuring and try and error, a 45mm driller turned out to be the tool. The biggest character is the `W`, which fits nicely.
+![frontpanel](./assets/frontpanel-defuse-hotglue.jpeg)
+
+## Wood Body
+The size of the wood body is a little bit smaller, approximately 888x888 mm, which gives the front panel some advance. The idea was to make the body invisible and let the front panel fly. Furthermore, the selected plate is a 27mm thick three-layer wood plate, which was available to me. But the decision was quite lucky because it is thick enough to achieve nice lighting and properly fix the front. 
+
+Because the clock size was selected arbitrarily, and we had no idea how big the characters would be, there was no real guide on manufacturing the wood body. So, we started copying each character from the front panel to the wood and used try-and-error to find the perfect driller size. Finally, we picked a 45mm driller because the resulting hole was big enough to fit all characters and keep enough space between each hole for clueing the front panel. We used the `W` to measure if all symbols match because it is the biggest.
+To perfectly center the 45 mm hole, we used a smaller driller in a preprocessing step to meet the middle later.
+
 
 ![woodBodyDriller](./assets/woodBodyDriller-min.jpg)
 ![woodBodyDrillerMachine](./assets/woodBodyDrillerMachine-min.jpg)
 ![woodBodyWhole](./assets/woodbodyWhole-min.jpg)
-
-The final hole was a little bit bigger, which was acceptable.
-![woodBodyFinalHole](./assets/woodBodyFinalHole-min.jpg)
-
-
-After some time, we have drilled all holes successfully. Because we had no professional workshop, we did some predrilling to meet exactly the middle with the hilti.
-
 ![woodBodyDrillPrepare](./assets/woodBodyDrillPrepare-min.jpg)
 ![woodBody](./assets/woodbody-min.jpg)
 
 
-After drilling all the holes, we have smoothed the holes a little bit on both sides. By smoothing the edges, we receive a bigger hole, with reduces the change that some character edges are not well lighted. However, this should not be the case, due to measurement before.
+Finally, we smoothed the edges of each hole a bit. This process enlarges the hole size even more and prevents some edges of a character are not lighted up and remaining dark later. Additionally, we removed a little bit of wood between the holes in each horizontal lane. This path is later used by the cables connecting the LEDs from each character.
 ![holeglasGrindWood-min.jpg](./assets/holeglasGrindWood-min.jpg)
 
-Next, we need to cut out paths for the cabels. We used a 45mm driller and a angle grinder for this task. The result does not look very pretty, but nobody will see it. We simply drilled the first layer away, which was a nice indicated when we had to stop. However, this came with a small downside, small remining pieces tend to break apart easily, so please be careful. Please apologize on the next image, that there is a path on the top, this was an mistake :)
-![cabelDrillout.jpg](./assets/cabelDrillout.jpg)
-
-Next, we need to remove 2mm of wood at the top of the body. This allows us to intergrate the metal strip with mounted/welded nuts on it into the wood body. In addition, we have cutted a strip on the right and left side, which will act as mounting point. The idea is that the clock is holded by the metal strip, which is screwed with the frontpanel. Hence, there is no change the the wood will break. To remove the 2mm (metal thickness) from the wood plate, we have used again the angle grinder and a belt sander. 
+Next, we need to remove 2mm of wood at the top of the body. This allows us to integrate the metal strip with mounted/welded nuts into the wood body. In addition, we have cutted a strip on the right and left side, which will act as a mounting point. The idea is that the clock is held by the metal strip, which is screwed together with the front panel. Hence, there is no chance that the wood will break. We have used the angle grinder and a belt sander to remove the 2mm (metal thickness) from the wood plate. 
 
 ![woodbodyHolderShape-min.jpg](./assets/woodbodyHolderShape-min.jpg)
 ![woodbodyHolderPlaced-min.jpg](./assets/woodbodyHolderPlaced-min.jpg)
 
-#TODO add some final images
+
+Next, we need to cut out paths for the cables and the microcontroller. We used a 45mm driller and an angle grinder for this task. The result does not look very pretty, but nobody will see it. We simply drilled the first layer away, which indicated when we had to stop. However, this came with a small downside, small remaining pieces tend to break apart easily, so please be careful. Please apologize for the next image, that there is a path on the top. This was a mistake :)
+Finally, we painted the body and we were done.
+
+![woodbody_final.jpeg](./assets/woodbody_final.jpeg)
 
 ## Backside
-Next, we will fabricat the backside with all the leds mounted. This part is the costliest one of the three ones, because we need to do a lot of soldering. We have used a 4mm press board with eight leds for each character. Please feel free to use less than eight leds per character, it's a massiv overkill. Although, four leds have not achieved the expected fluent result, therefore we picked eight. By using eight leds, a lighting power of 50 out of 255 is enought for normal light conditions. 
+Now, we will fabricate the backside with all the LEDs mounted. This part is the costliest one of the three ones because we need to do a lot of soldering. We have used a 4 mm press board with eight LEDs per character. Please feel free to use less than eight LEDs per character; it's a massive overkill. We have used 5050 SK6812 RGBW LEDs which are powered via 5V. 
 
-Simply place the woodbody on the press board and copy the holes to it.
-After this, simply cut the led strips and solder everything properly.
+Simply place the wood body on the pressboard and copy over the holes. After this, cut the LED strips and solder everything together.
 
 ![backFinal-min.jpg](./assets/backFinal-min.jpg)
 
-Please ensure to use an big enought cable diameter which supports the current. We have choosen 0.125 which seems to work but is really the lower bound in our opinion. After soldering everything, we have fixed them with hotglue.
+Please ensure to use a big enough cable diameter that supports the current. We have chosen 0.125, which works but is the lower bound. After soldering everything, we fixed everything with hot glue.
 
 ![backLedGroup-min.jpg](./assets/backLedGroup-min.jpg)
 
-To reduce the cables, we have picked a 1.5mm cable for power and mass and soldered each line to it. In total, we have not ten control cabels plus two more for power and mass. In total, twelve cabels which go to the controller.
-
+To reduce the cables, we picked a 1.5mm cable for power and mass and soldered each line to it. In total, we ended up with ten control cables plus two for power. In total, twelve cables going to the controller.
+Finally, we colored the pressboard also white and the back board is done. The plate is mounted to the wood body with simple screws.
 
 ## Controller
-For the controller, we have picked an [AtMega382p](http://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf) in combination with a [DS3231](https://datasheets.maximintegrated.com/en/ds/DS3231.pdf) RTC.
+For the controller, we have picked an [AtMega382p](http://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf) in combination with a [DS3231](https://datasheets.maximintegrated.com/en/ds/DS3231.pdf) RTC. The design is chosen so that it fits perfectly into the prepared hole. Additionally, added a photoresistor to adjust the LED brightness depending on the ambient light level. The resistor, together with the power cable, is exposed through a small cutout.
 
+![controller_final.jpeg](./assets/controller_final.jpeg)
 
 
 ## Software
 Please checkout the [code](./code) directory.
 
- -->
+## Pictures
+Because picture explain more than 1000 words, here some one from the final product.
+
+![morgeb_alive.jpeg](./assets/morgeb_alive.jpeg)
+![morgeb_backside.jpeg](./assets/morgeb_backside.jpeg)
+![morgeb_thickness.jpeg](./assets/morgeb_thickness.jpeg)
+
