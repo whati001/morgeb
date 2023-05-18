@@ -7,9 +7,18 @@
 #include "morgeb.h"
 #include "fp-sk6812.h"
 
-uint8_t cshell_running;
+uint8_t cshell_running, timer_int_count;
 RTC_DS3231 rtc;
 SK6812FrontPanel_ frontpanel(LAYOUT_DIMENSION, LAYOUT, PIXEL_PER_CHAR);
+
+uint8_t interrupt_rec;
+enum INTERRUPTS
+{
+  NONE = 0,
+  TIMER_INTERRUPT = 1,
+  RTC_INTERRUPT,
+  ADC_INTERRUPT
+};
 
 /*
  * Small helper function to read persistent color value from EEPROM
@@ -90,6 +99,34 @@ int init_frontpanel()
   return RET_SUCCESS;
 }
 
+// https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf
+// https://ww1.microchip.com/downloads/en/Appnotes/Atmel-2505-Setup-and-Use-of-AVR-Timers_ApplicationNote_AVR130.pdf
+int init_timer()
+{
+  Serial.println("Start to initialize the timer instance for periodic ADC readings");
+
+  // use the timer in Normal mode -> count from 0 to 0xff
+  TCCR2A &= ~(1 << WGM20);
+  TCCR2A &= ~(1 << WGM21);
+  TCCR2B &= ~(1 << WGM22);
+
+  // reset the counter register
+  TCNT2 = 0;
+
+  // clear interrupt flag register
+  TIFR2 &= ~(1 << TOV2);
+
+  // enable interrupts
+  TIMSK2 |= (1 << TOIE2);
+
+  // use the highest prescaler 1024
+  TCCR2B |= (1 << CS20) | (1 << CS21) | (1 << CS22);
+
+  Serial.println("Finished to initialize the timer for periodic ADC readings");
+
+  return RET_SUCCESS;
+}
+
 /*
  * Handel error message properly. If
  */
@@ -126,9 +163,19 @@ void handle_error(int err)
 int init_application()
 {
   int err = RET_SUCCESS;
+
+  interrupt_rec = INTERRUPTS::NONE;
+  timer_int_count = 0;
+
   Serial.begin(9600);
   while (!Serial)
     ;
+
+  // #TODO: remove before fly
+  err = init_timer();
+  handle_error(err);
+  Serial.println(F("Initiated Timer properly"));
+  return 0;
 
   err = init_rtc();
   handle_error(err);
@@ -138,6 +185,9 @@ int init_application()
   handle_error(err);
   Serial.println(F("Initiated Frontpanel properly"));
 
+  err = init_timer();
+  handle_error(err);
+  Serial.println(F("Initiated Timer properly"));
   return err;
 }
 
@@ -321,40 +371,21 @@ void setup()
  */
 void wakeupISR()
 {
-  Serial.println("Some interrupt occrued");
   sleep_disable();
   detachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN));
+  interrupt_rec = INTERRUPTS::RTC_INTERRUPT;
 }
 
 /*
- * Send the mic to POWER DOWN mode to save energy
- * He will be woken up by external interrupts, triggered by the RTC on D2 (nano)
+ * ISR called when the timer2 overflows
  */
-void goSleep()
+ISR(TIMER2_OVF_vect)
 {
-  sleep_enable();
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-
-  noInterrupts();
-  attachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN), wakeupISR, LOW);
-
-  interrupts();
-  Serial.flush();
-  sleep_cpu();
-
-  //---------------------------------------------------------------------------
-  /* The program will continue from here when it wakes */
-  //---------------------------------------------------------------------------
-
-  rtc.disableAlarm(1);
-  rtc.clearAlarm(1);
+  sleep_disable();
+  interrupt_rec = INTERRUPTS::TIMER_INTERRUPT;
 }
 
-/*
- * Update the time every five minutes
- * Let the microcontroller sleep with in the Power Down mode to save energy
- */
-void loop()
+void update_clock_time()
 {
   // compute next wakeup, which is a multiple of 5 and has 0 seconds
   // hence, we substract the current seconds and compute the next smooth minute value
@@ -376,6 +407,68 @@ void loop()
                            TimeSpan(0, 0, ((now.minute()) / RTC_SLEEP_TIME) * RTC_SLEEP_TIME, 0);
 
   frontpanel.update(now_five_base.hour(), now_five_base.minute(), now_five_base.second());
+}
 
+/*
+ * Send the mic to POWER DOWN mode to save energy
+ * He will be woken up by external interrupts, triggered by the RTC on D2 (nano)
+ */
+void goSleep()
+{
+  sleep_enable();
+  set_sleep_mode(SLEEP_MODE_IDLE);
+
+  noInterrupts();
+  // TODO: remove before fly
+  // attachInterrupt(digitalPinToInterrupt(RTC_WAKEUP_PIN), wakeupISR, LOW);
+  interrupts();
+
+  sleep_cpu();
+
+  //---------------------------------------------------------------------------
+  /* The program will continue from here when it wakes */
+  //---------------------------------------------------------------------------
+
+  // TODO: uncomment before fly
+  // rtc.disableAlarm(1);
+  // rtc.clearAlarm(1);
+}
+
+/*
+ * Update the time every five minutes
+ * Let the microcontroller sleep with in the Power Down mode to save energy
+ */
+void loop()
+{
+  // init some timer to wakeup every 16ms
+  switch (interrupt_rec)
+  {
+  case INTERRUPTS::TIMER_INTERRUPT:
+  {
+    timer_int_count++;
+    if (timer_int_count >= 30)
+    {
+      timer_int_count = 0;
+      Serial.println("Received 30 timer interrupts, start a new ADC conversion");
+      // TODO: add some ADC conversion
+    }
+    break;
+  }
+  case INTERRUPTS::RTC_INTERRUPT:
+  {
+    Serial.println("Received RTC interrupt, update the clock time");
+    update_clock_time();
+    break;
+  }
+  case INTERRUPTS::ADC_INTERRUPT:
+  {
+    Serial.println("Received ADC interrupt, update clock color");
+    break;
+  }
+  default:
+    break;
+  }
+
+  interrupt_rec = INTERRUPTS::NONE;
   goSleep();
 }

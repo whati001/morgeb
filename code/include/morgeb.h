@@ -70,7 +70,7 @@ const fp_dimension_ LAYOUT_DIMENSION = {
 #define RTC_SLEEP_TIME 5
 
 // define the user config timeout
-#define USER_CONFIG_SEC_TIMEOUT 10
+#define USER_CONFIG_SEC_TIMEOUT 0 // 10
 #define USER_CONFIG_MS_TIMEOUT (USER_CONFIG_SEC_TIMEOUT * 1000)
 #define USER_CONFIG_POLL_MS_TIMEOUT 100
 
